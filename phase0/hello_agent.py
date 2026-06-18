@@ -12,7 +12,7 @@ LANGSMITH_PROJECT to inspect every step.
 """
 
 from __future__ import annotations
-
+from pathlib import Path
 import os
 
 from dotenv import load_dotenv
@@ -38,7 +38,7 @@ class Analysis(BaseModel):
 
 
 def main() -> None:
-    load_dotenv()
+    load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
     # Imported here (not at module top) so the module can be imported by the
     # tests without the provider package being installed.

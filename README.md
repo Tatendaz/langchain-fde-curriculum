@@ -241,7 +241,7 @@ primary.)*
 
 ## Progress checklist
 
-- [ ] **Phase 0** — Traced "hello world" (tool call + structured output)
+- [x] **Phase 0** — Traced "hello world" (tool call + structured output)
 - [ ] **Phase 1** — Single agent calling 2–3 real tools, fully traced
 - [ ] **Phase 2** — LangGraph rebuild with Postgres persistence + approval interrupt
 - [ ] **Phase 3** — Agent with knowledge base + long-term memory + MCP tool
