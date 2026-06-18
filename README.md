@@ -51,7 +51,8 @@ projects.
 ├── README.md          # this curriculum
 ├── pyproject.toml     # uv project (dependencies shared across phases)
 ├── .env.example       # copy to .env and fill in your API keys
-├── phase0/            # Phase 0 starter — traced hello-world (start here)
+├── phase0/            # Phase 0 — traced hello-world (tool call + structured output)
+├── phase1/            # Phase 1 — first agent via create_agent (one nested trace)
 └── tests/             # offline unit tests for the pure logic in each phase
 ```
 
