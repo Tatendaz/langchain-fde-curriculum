@@ -44,6 +44,30 @@ projects.
 - Track yourself with the [progress checklist](#progress-checklist) at the
   bottom.
 
+## Repo layout
+
+```
+.
+├── README.md          # this curriculum
+├── pyproject.toml     # uv project (dependencies shared across phases)
+├── .env.example       # copy to .env and fill in your API keys
+├── phase0/            # Phase 0 starter — traced hello-world (start here)
+└── tests/             # offline unit tests for the pure logic in each phase
+```
+
+**Getting started:** install [`uv`](https://docs.astral.sh/uv/), then from the
+repo root:
+
+```bash
+uv sync                              # create the venv + install dependencies
+cp .env.example .env                 # then fill in your ANTHROPIC + LANGSMITH keys
+uv run python -m phase0.hello_agent  # run the Phase 0 starter
+uv run pytest                        # run the tests
+```
+
+See [`phase0/README.md`](phase0/README.md) for what Phase 0 does and what to
+look for in LangSmith.
+
 ---
 
 ## Operating principles

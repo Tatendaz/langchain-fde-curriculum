@@ -1,0 +1,27 @@
+[project]
+name = "langchain-fde-curriculum"
+version = "0.1.0"
+description = "Hands-on work for the LangChain / LangGraph / LangSmith FDE curriculum."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "langchain>=0.3",
+    "langchain-anthropic>=0.3",
+    "langsmith>=0.1",
+    "pydantic>=2",
+    "python-dotenv>=1.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+]
+
+# This is an application, not a publishable library, so uv shouldn't try to
+# build/install the project itself — it just manages the venv + dependencies.
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+# Put the repo root on sys.path so tests can `import phase0` etc.
+pythonpath = ["."]
