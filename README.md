@@ -60,7 +60,7 @@ repo root:
 
 ```bash
 uv sync                              # create the venv + install dependencies
-cp .env.example .env                 # then fill in your ANTHROPIC + LANGSMITH keys
+cp .env.example .env                 # then set your Ollama + LangSmith values
 uv run python -m phase0.hello_agent  # run the Phase 0 starter
 uv run pytest                        # run the tests
 ```
@@ -233,7 +233,7 @@ primary.)*
 ## Recommended starter stack
 
 `Python 3.11 + uv` · `langchain` + `langgraph` + a provider integration (e.g.
-`langchain-anthropic`) · `langsmith` · `pgvector` on Postgres ·
+`langchain-ollama`) · `langsmith` · `pgvector` on Postgres ·
 `langchain-mcp-adapters` · `FastAPI` for serving · `pytest` for eval CI ·
 `Helm` / k8s for deploy.
 

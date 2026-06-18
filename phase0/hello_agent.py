@@ -40,17 +40,23 @@ class Analysis(BaseModel):
 def main() -> None:
     load_dotenv()
 
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        raise SystemExit(
-            "ANTHROPIC_API_KEY is not set. Copy .env.example to .env and fill it in."
-        )
-
     # Imported here (not at module top) so the module can be imported by the
-    # tests without the provider package being configured.
-    from langchain_anthropic import ChatAnthropic
+    # tests without the provider package being installed.
+    from langchain_ollama import ChatOllama
 
-    model_name = os.getenv("MODEL", "claude-sonnet-4-6")
-    llm = ChatAnthropic(model=model_name, temperature=0)
+    # Local Ollama needs no key; Ollama Cloud / remote endpoints do. When a key
+    # is present it's sent as a bearer token via the client's request headers.
+    base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    api_key = os.getenv("OLLAMA_API_KEY")
+    client_kwargs = {"headers": {"Authorization": f"Bearer {api_key}"}} if api_key else {}
+
+    model_name = os.getenv("MODEL", "llama3.1")
+    llm = ChatOllama(
+        model=model_name,
+        temperature=0,
+        base_url=base_url,
+        client_kwargs=client_kwargs,
+    )
 
     question = (
         "How many words are in this sentence: "

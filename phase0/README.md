@@ -12,11 +12,23 @@ LangSmith**.
 4. Asks the model for a final answer as a typed `Analysis` (Pydantic) object.
 5. Because `LANGSMITH_TRACING=true`, every step is captured as a trace.
 
+## Prerequisites
+
+You need an Ollama model that supports **tool calling**, plus a LangSmith key
+for tracing.
+
+- **Local Ollama:** install from <https://ollama.com>, then
+  `ollama pull llama3.1` (or `qwen2.5`). No API key needed; `OLLAMA_BASE_URL`
+  defaults to `http://localhost:11434`.
+- **Ollama Cloud / remote:** set `OLLAMA_BASE_URL=https://ollama.com` and
+  `OLLAMA_API_KEY=<your key>` in `.env` (sent as a Bearer token), and set
+  `MODEL` to a cloud model such as `gpt-oss:20b`.
+
 ## Run it
 
 ```bash
 uv sync                         # from the repo root: create the venv + install deps
-cp .env.example .env            # then fill in ANTHROPIC_API_KEY + LANGSMITH_API_KEY
+cp .env.example .env            # then set your Ollama + LangSmith values
 uv run python -m phase0.hello_agent
 ```
 
