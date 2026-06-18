@@ -53,6 +53,7 @@ projects.
 ├── .env.example       # copy to .env and fill in your API keys
 ├── phase0/            # Phase 0 — traced hello-world (tool call + structured output)
 ├── phase1/            # Phase 1 — first agent via create_agent (one nested trace)
+├── phase2/            # Phase 2 — LangGraph rebuild: persistence + human approval
 └── tests/             # offline unit tests for the pure logic in each phase
 ```
 
@@ -243,7 +244,7 @@ primary.)*
 ## Progress checklist
 
 - [x] **Phase 0** — Traced "hello world" (tool call + structured output)
-- [ ] **Phase 1** — Single agent calling 2–3 real tools, fully traced
+- [x] **Phase 1** — Single agent calling 2–3 real tools, fully traced
 - [ ] **Phase 2** — LangGraph rebuild with Postgres persistence + approval interrupt
 - [ ] **Phase 3** — Agent with knowledge base + long-term memory + MCP tool
 - [ ] **Phase 4** — Eval suite + CI regression gate + monitoring dashboard
