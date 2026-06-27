@@ -48,6 +48,21 @@ Two runs share thread `demo-1`:
 uv run pytest
 ```
 
+## Check your understanding
+
+Answer these without re-reading the code:
+
+1. Run 2 "remembered" the conversation without you re-sending the history. What
+   provided that, and what is the role of `thread_id`?
+2. Where does `interrupt()` pause the graph, and what does
+   `Command(resume="approve")` actually feed back into the paused node? Why is a
+   checkpointer *required* for interrupts to work?
+3. The approval gate used a **custom** tools node instead of the prebuilt
+   `ToolNode`. Give one concrete reason that mattered here.
+4. In the run, the interrupt fired twice. Why? And why must `interrupt()` be
+   called *before* any side effect in the node (what happens to the node when you
+   resume)?
+
 ## ✅ Done when
 
 You can point to a trace where the write paused for approval, and a second run in

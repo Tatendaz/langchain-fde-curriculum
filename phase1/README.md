@@ -48,6 +48,21 @@ uv run pytest
 The tests cover the pure tools (`calculator`, `word_count`) offline; `fetch_url`
 and the model call are verified by eye in the trace.
 
+## Check your understanding
+
+Answer these without re-reading the code:
+
+1. Phase 0 produced three separate traces; this phase produced one nested tree.
+   What is `create_agent` doing on each loop iteration that collapses them into
+   one trace?
+2. The agent fetched a page and then counted words *in that page's text*. What
+   mechanism lets the second tool call use the first tool's output as its input?
+3. The first run returned an empty final answer until you strengthened the system
+   prompt. In terms of the agent loop, what makes the loop **stop** — and why did
+   an empty message stop it "early"?
+4. Why is `calculator` built on an AST walk instead of `eval()`? Give the
+   concrete risk of `eval` in a tool the model can call with any string.
+
 ## ✅ Done when
 
 You can point to one nested agent trace that shows the model calling

@@ -56,6 +56,19 @@ uv run pytest
 The tests cover the pure logic (`word_count`, the `Analysis` schema) without
 calling the API, so they run offline and in CI.
 
+## Check your understanding
+
+Answer these without re-reading the code:
+
+1. The starter makes **two** model calls — one with `bind_tools`, one with
+   `with_structured_output`. What does each do, and why not a single call?
+2. In the trace, the tool-calling turn shows the AI message content as `""`
+   (empty). If the model "did something," where did that something go, if not
+   into the content?
+3. Tracing only works when certain env vars are set. Which ones — and if
+   `LANGSMITH_API_KEY` is wrong or missing, does the agent still produce an
+   answer, or does it crash? Why?
+
 ## ✅ Done when
 
 You can point to a LangSmith trace that shows the tool call and the structured
