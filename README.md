@@ -4,6 +4,13 @@
 > *"I can design, evaluate, and ship production agents on the LangChain /
 > LangGraph / LangSmith stack — and deliver them as a service."*
 
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg?logo=python&logoColor=white)](pyproject.toml)
+[![LangChain](https://img.shields.io/badge/LangChain-1.0-1C3C3C.svg?logo=langchain&logoColor=white)](https://python.langchain.com)
+[![LangGraph](https://img.shields.io/badge/LangGraph-0.3-1C3C3C.svg)](https://langchain-ai.github.io/langgraph/)
+[![LangSmith](https://img.shields.io/badge/observability-LangSmith-1C3C3C.svg)](https://smith.langchain.com)
+[![uv](https://img.shields.io/badge/packaged%20with-uv-DE5FE9.svg?logo=uv&logoColor=white)](https://docs.astral.sh/uv/)
+[![Progress](https://img.shields.io/badge/progress-3%2F7%20phases-brightgreen.svg)](#progress-checklist)
+
 The LangChain ecosystem moves fast. This curriculum optimizes for the
 **durable skills** (agent architecture, evaluation, observability,
 productionization) over memorizing today's API surface, and ends each phase in
