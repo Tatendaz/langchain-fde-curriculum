@@ -1,0 +1,97 @@
+name: PR Gate
+
+# Server-side mirror of the local pre-push gate from the tatendaz-github skill.
+# Catches anyone (human or agent) who bypassed the local checks.
+#
+# Untrusted inputs (branch names, refs) are passed to scripts via `env:` and
+# expanded by the shell — never template-interpolated into `run:` bodies —
+# to prevent workflow-injection from crafted fork branch names.
+
+on:
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  docs-gate:
+    name: Docs gate (features + summaries)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Derive branch slug
+        id: slug
+        run: |
+          branch="${GITHUB_HEAD_REF}"
+          slug="${branch#feat/}"
+          slug="${slug#fix/}"
+          slug="${slug#chore/}"
+          slug="${slug#docs/}"
+          slug="${slug#refactor/}"
+          slug="${slug//\//-}"
+          echo "slug=$slug" >> "$GITHUB_OUTPUT"
+          echo "Branch slug: $slug"
+
+      - name: Require docs/features entry
+        env:
+          SLUG: ${{ steps.slug.outputs.slug }}
+        run: |
+          if ! ls docs/features/*"${SLUG}".md >/dev/null 2>&1; then
+            echo "::error::Missing docs/features/<date>-${SLUG}.md for this branch."
+            echo "Add a feature-description markdown file under docs/features/ before merging."
+            exit 1
+          fi
+
+      - name: Require docs/summaries entry
+        env:
+          SLUG: ${{ steps.slug.outputs.slug }}
+        run: |
+          if ! ls docs/summaries/*"${SLUG}".md >/dev/null 2>&1; then
+            echo "::error::Missing docs/summaries/<date>-${SLUG}.md for this branch."
+            echo "Add a session/prompt summary under docs/summaries/ before merging."
+            exit 1
+          fi
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      # This repo is a uv-managed application (package = false): install the
+      # locked dependencies and run the offline test suite.
+      - name: Run tests
+        run: |
+          uv sync --frozen
+          uv run pytest -q
+
+  coverage-for-new-code:
+    name: New code has new tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check that changed source files have changed tests
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          git fetch origin "$BASE"
+          changed=$(git diff --name-only "origin/${BASE}...HEAD")
+          src_changed=$(echo "$changed" | grep -Ev '(^|/)(test|tests|__tests__|spec|docs|\.github)/' \
+            | grep -Ev '(_test\.go|\.test\.(ts|tsx|js|jsx)|\.spec\.(ts|tsx|js|jsx)|^test_|_spec\.rb)$' \
+            | grep -E '\.(py|ts|tsx|js|jsx|go|rs|rb|java|kt)$' || true)
+          test_changed=$(echo "$changed" | grep -E '(^|/)(test|tests|__tests__|spec)/|_test\.go$|\.test\.(ts|tsx|js|jsx)$|\.spec\.(ts|tsx|js|jsx)$|/test_[^/]+\.py$|_spec\.rb$' || true)
+          if [ -n "$src_changed" ] && [ -z "$test_changed" ]; then
+            echo "::error::Source files changed but no test files changed:"
+            echo "$src_changed"
+            echo "Add tests covering the new behavior before merging."
+            exit 1
+          fi
+          echo "Source changes: $(echo "$src_changed" | wc -l) file(s)"
+          echo "Test changes:   $(echo "$test_changed" | wc -l) file(s)"

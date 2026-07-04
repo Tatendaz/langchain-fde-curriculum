@@ -188,6 +188,7 @@ run → modify → ship → gate.
 ├── phase5/            # build guide: guardrails, reliability, deployment
 ├── phase6/            # build guide: capstone brief + FDE drills
 ├── tests/             # offline unit tests for the pure logic in each phase
+├── .github/workflows/ # PR gate: tests + docs + new-code-has-tests
 ├── CONTRIBUTING.md    # fixes, questions, and sharing your solutions
 └── LICENSE            # MIT (code) — prose is CC BY 4.0, see below
 ```

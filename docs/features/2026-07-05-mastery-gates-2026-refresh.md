@@ -49,6 +49,8 @@ what FDE interviews actually test.
 
 - Phases 4–6 are deliberately guides without solution code; CONTRIBUTING.md
   asks that solutions stay in learners' forks.
-- No repo CI gate installed yet (`.github/workflows/pr-gate.yml` available
-  from the tatendaz-github skill assets if wanted).
+- Also installs `.github/workflows/pr-gate.yml` (server-side tests /
+  coverage / docs gate), adapted to uv and hardened against workflow
+  injection (untrusted refs passed via `env:`, never template-interpolated
+  into scripts).
 - Existing progress-checklist states preserved (phases 0–2 checked).
