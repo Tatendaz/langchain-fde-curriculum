@@ -154,9 +154,12 @@ costs nothing; the approve/reject button in their UI simply calls resume on
 that thread. The restart question is the trap: with `MemorySaver` the paused
 state lives in process memory, so a restart **loses the pending approval**.
 Production uses `PostgresSaver`: the thread and its pending interrupt survive
-restarts, any replica can resume it, and the thread history doubles as an
-audit trail of who approved what, when. This — durable approval workflows, not
-chat memory — is why enterprises treat checkpointing as non-negotiable.
+restarts and any replica can resume it. One precision worth volunteering: the
+persisted thread shows each pending write and the decision it got, but it does
+**not** record *who* approved or when — approver identity and timestamps come
+from your app's auth layer and get logged alongside. This — durable approval
+workflows, not chat memory — is why enterprises treat checkpointing as
+non-negotiable.
 
 </details>
 

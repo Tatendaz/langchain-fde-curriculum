@@ -5,7 +5,7 @@
 > agents on the LangChain / LangGraph / LangSmith stack — and deliver them as
 > a service."*
 
-**Time:** ~55–70 focused hours · 8 weeks at 8–10 hrs/week · **hard cap: 2 months**
+**Time:** ~60–70 focused hours · 8 weeks at ~8–9 hrs/week · **hard cap: 2 months**
 **Cost:** ~$0 on the default path — local [Ollama](https://ollama.com) models +
 LangSmith's free tier (Phase 5's *managed* deployment option needs a paid
 plan; the DIY path taught alongside it stays free)
