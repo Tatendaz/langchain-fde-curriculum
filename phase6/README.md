@@ -217,8 +217,11 @@ mechanisms that make that true.
 `interrupt()` pauses by **checkpointing** the graph's exact state, and a
 **durable checkpointer** (Postgres) stores that checkpoint outside the
 process keyed by `thread_id`. Resume loads the checkpoint — on any replica —
-and replays the node, with `interrupt()` returning the resume value. Pause
-= persist; that's why no checkpointer means no interrupts.
+and replays the node, with `interrupt()` returning the resume value. Note
+the split: *any* checkpointer enables pause/resume, but an in-memory one
+dies with the process — **durability across restarts is specifically what
+Postgres adds**. Pause = persist; that's why no checkpointer means no
+interrupts.
 
 </details>
 

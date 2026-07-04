@@ -6,7 +6,9 @@
 > a service."*
 
 **Time:** ~55–70 focused hours · 8 weeks at 8–10 hrs/week · **hard cap: 2 months**
-**Cost:** ~$0 — local [Ollama](https://ollama.com) models + LangSmith's free tier
+**Cost:** ~$0 on the default path — local [Ollama](https://ollama.com) models +
+LangSmith's free tier (Phase 5's *managed* deployment option needs a paid
+plan; the DIY path taught alongside it stays free)
 **You finish with:** a deployed, evaluated, monitored capstone agent + a case
 study + a demo video — a portfolio that answers the question every FDE
 interview and client call comes down to: *"How do you know it works?"*
@@ -65,9 +67,13 @@ agent-engineering* layer).
 - **Models: free.** Everything runs on local Ollama (`llama3.1`, or any
   tool-calling model). If your machine is weak, Ollama Cloud or any hosted
   provider works with a one-line `.env` change — budget a few dollars.
-- **LangSmith: free tier** covers everything here (tracing, datasets,
-  evaluations).
-- **Phase 5** uses a local `kind`/`minikube` cluster — no cloud bill.
+- **LangSmith: the free Developer tier** covers this curriculum's tracing,
+  datasets, and evaluations (it has monthly trace limits — far above
+  learner volume).
+- **Phase 5:** the DIY path runs on a local `kind`/`minikube` cluster — no
+  cloud bill. The managed path (LangSmith Deployment) requires a paid plan;
+  it's presented as the client-engagement option, not a learning
+  requirement.
 
 ---
 
@@ -139,8 +145,9 @@ Every phase has the same anatomy, in this order:
 - **End of week 6:** not finished Phase 5 → take the managed deployment path
   (LangSmith Deployment) instead of DIY k8s, and reclaim a week.
 - The non-negotiable spine is **1 → 2 → 4 → 5 → capstone**: build an agent,
-  make it stateful, prove it works, ship it. A skipped week shifts the
-  calendar; it never reorders the spine.
+  make it stateful, prove it works, ship it. (Phase 3 isn't skipped — it's
+  the one phase whose *depth* flexes.) A skipped week shifts the calendar;
+  it never reorders the spine.
 
 ## Getting started
 
@@ -160,7 +167,7 @@ run → modify → ship → gate.
 
 ## Repo layout
 
-```
+```text
 .
 ├── README.md          # this curriculum
 ├── pyproject.toml     # uv project (dependencies shared across phases)

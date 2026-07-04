@@ -69,7 +69,8 @@ Least ops; the right call for many client engagements.
    the deployment for an instant streaming front end with HITL support.
 4. Know the deployment spectrum for client conversations: cloud SaaS →
    hybrid (their data plane, managed control plane) → fully self-hosted →
-   standalone container (just Docker + your Postgres/Redis).
+   standalone container (Docker + your own Postgres/Redis, plus a LangSmith
+   API key and license key).
 
 ### Path B · DIY — FastAPI + k8s (the moat, if infra is your home turf)
 
@@ -84,7 +85,10 @@ Least ops; the right call for many client engagements.
 3. **Containerize:** small image, non-root, config via env vars only.
 4. **Deploy to `kind`/`minikube`:** Deployment + Service + Ingress, secrets
    in k8s `Secret`s (never the image), liveness/readiness probes, **HPA**
-   with 2+ replicas, Postgres in-cluster or sidecar'd for the exercise.
+   with 2+ replicas. Postgres must have storage that **outlives your app
+   pods** — a PV-backed in-cluster instance or a database outside the
+   cluster. Never a sidecar in the app pod: the whole exercise is killing
+   that pod and keeping the checkpoints.
 5. **Prove the properties** (this is the deliverable, not the YAML):
    - kill the pod mid-conversation → same `thread_id` resumes with history
      intact on another replica;
