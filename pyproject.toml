@@ -4,9 +4,12 @@ version = "0.1.0"
 description = "Hands-on work for the LangChain / LangGraph / LangSmith FDE curriculum."
 readme = "README.md"
 requires-python = ">=3.11"
+# Upper bounds on the two core frameworks: teaching material breaks loudly on
+# major-version bumps (e.g. langgraph v2 removes deprecated prebuilts), so a
+# fresh `uv sync` should never silently jump a major.
 dependencies = [
-    "langchain>=1.0",
-    "langgraph>=0.3",
+    "langchain>=1.0,<2",
+    "langgraph>=0.3,<2",
     "langchain-mcp-adapters>=0.1",
     "langchain-text-splitters>=0.3",
     "mcp>=1.0",
