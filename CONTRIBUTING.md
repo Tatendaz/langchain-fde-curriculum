@@ -21,9 +21,33 @@ Thanks for improving the curriculum. Ground rules keep it teachable:
 1. Fork, branch, make the change.
 2. `uv run pytest` must stay green; if you touch phase 0–3 code, keep the
    pure logic unit-testable offline (no network in tests).
-3. Keep each phase folder standalone — someone should be able to link
-   directly to any phase.
-4. Open a PR describing *what a learner gains* from the change.
+3. Keep each phase README self-contained *as a document* — someone should be
+   able to link directly to any phase and follow it without the others. (The
+   *code* does build up: `phase2/agent.py` imports Phase 1's tools, and phases
+   4–6 work against your Phase 3 agent. That's fine; the prose is what has to
+   stand alone.)
+4. **Add the two docs entries the PR gate requires** — see below.
+5. Open a PR describing *what a learner gains* from the change.
+
+## The PR gate
+
+`.github/workflows/pr-gate.yml` runs on every PR into `main` and has three
+jobs. The first one catches people by surprise, so: **a PR with no
+`docs/features/` and `docs/summaries/` entry is hard-failed**, whatever else
+is in it.
+
+| Job | What it does | How to satisfy it |
+|---|---|---|
+| Docs gate | Requires `docs/features/*<slug>.md` **and** `docs/summaries/*<slug>.md` | Add both, named `<YYYY-MM-DD>-<slug>.md` |
+| Tests | `uv sync --frozen` then `uv run pytest -q` | Keep the suite green; re-run `uv lock` if you touch `pyproject.toml` |
+| New code has new tests | Fails if source files changed and no test file did | Add or update a test under `tests/` |
+
+The **slug** is your branch name with a leading `feat/`, `fix/`, `chore/`,
+`docs/` or `refactor/` stripped and remaining `/` turned into `-`. So branch
+`docs/readme-slim` → slug `readme-slim` → `docs/features/2026-07-25-readme-slim.md`.
+Copy the shape of the entries already in those folders: the feature file says
+what changed and why, the summary file records the prompts, steps and
+decisions.
 
 ## Questions
 
@@ -32,5 +56,6 @@ regularly graduate into the READMEs.
 
 ## License of contributions
 
-Code contributions land under MIT; prose under CC BY 4.0 (see README
-"Using or sharing this curriculum").
+Contributions land under the repo's [MIT license](LICENSE), which by its own
+wording covers "the Software and associated documentation files" — the code
+*and* the prose.
