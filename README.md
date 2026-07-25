@@ -173,7 +173,7 @@ All of it is needed *before* the first command, not discovered mid-phase.
 
 ```bash
 ollama pull llama3.1                 # any tool-calling model works
-ollama pull nomic-embed-text         # embeddings — needed from Phase 3 on
+ollama pull nomic-embed-text         # optional prefetch — not used until Phase 3
 
 uv sync                              # create the venv + install the lockfile
 cp .env.example .env                 # then fill it in — see just below
@@ -246,8 +246,8 @@ cited study. Weight it accordingly.*
   always the same: pitching instead of asking.
 - **Decomposition under ambiguity** — the round that decides a lot of loops:
   vague enterprise problem → clarifying questions → assumptions → walking
-  skeleton → eval plan. Jumping to architecture before asking is the rejection
-  reason interviewers cite most.
+  skeleton → eval plan. Jumping to architecture before asking is a common
+  rejection reason.
 - **Demo-driven delivery** — ship a rough working demo in days, iterate with
   the client in the loop, and always demo with the trace open ("watch it,"
   not "trust me").
@@ -290,7 +290,7 @@ passed = build boxes ticked **and** concept check cleared **and** scenario
 answered. Be honest; nobody's grading you but the next client.
 
 - [ ] **Phase 0** — Traced "hello world" (tool call + structured output)
-- [ ] **Phase 1** — Single agent calling 2–3 real tools, one nested trace
+- [ ] **Phase 1** — Single agent calling 3 real tools, one nested trace
 - [ ] **Phase 2** — LangGraph rebuild with persistence + approval interrupt
 - [ ] **Phase 3** — Agent with knowledge base + long-term memory + MCP tool
 - [ ] **Phase 4** — Eval suite + CI regression gate + monitoring

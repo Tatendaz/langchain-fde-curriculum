@@ -41,7 +41,7 @@ them as primitives.
 - **LangSmith trace-reading as a debugging skill:** runs, threads, latency,
   token counts — and why the whole run is *one nested tree*.
 - Tool safety: why every tool argument is untrusted input.
-- **Deliverable:** a single agent calling 2–3 *real* tools (HTTP fetch +
+- **Deliverable:** a single agent calling 3 *real* tools (HTTP fetch +
   calculator + word count), fully traced.
 - **Gate:** [phase1/README.md → Phase gate](../phase1/README.md#phase-gate--pass-this-before-phase-2)
 

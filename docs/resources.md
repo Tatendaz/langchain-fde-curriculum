@@ -10,7 +10,8 @@ Things worth knowing exist, deliberately left out of the 8 weeks:
   LangChain's opinionated agent harness (planning, subagents, virtual
   filesystem). After Phase 2 you'll understand exactly what it packages.
 - **Multi-agent patterns** (supervisor / swarm) — add when a client's problem
-  actually shapes that way; single well-evaluated agents win most engagements.
+  actually shapes that way; prefer a single well-evaluated agent until the
+  problem demands more.
 - **[A2A](https://a2a-protocol.org)** (agent-to-agent protocol) and the
   evolving MCP spec — track them; enterprises are starting to ask.
 - **TypeScript** — most FDE postings pair Python with JS/TS. Port your
