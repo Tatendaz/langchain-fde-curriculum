@@ -93,7 +93,12 @@ Markdown-only PRs — sharper gate questions, FDE scenarios, a
 
 ## Checks that must pass
 
-`main` is protected; a pull request is the only way in. The required checks:
+Merging to `main` requires a pull request with every check below green, all
+review conversations resolved, and one approving review from the code owner
+(@Tatendaz). These are enforced by the `protect-main` branch ruleset, applied
+when the change that introduced this file lands — if you are reading this on
+that PR itself, treat it as the agreed policy rather than something GitHub is
+already blocking on. The required checks:
 
 | Check | What it runs |
 |---|---|
