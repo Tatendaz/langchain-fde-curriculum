@@ -21,8 +21,11 @@ Thanks for improving the curriculum. Ground rules keep it teachable:
 1. Fork, branch (see **Branch naming** below), make the change.
 2. `uv run pytest` must stay green; if you touch phase 0–3 code, keep the
    pure logic unit-testable offline (no network in tests).
-3. Keep each phase folder standalone — someone should be able to link
-   directly to any phase.
+3. Keep each phase README self-contained *as a document* — someone should be
+   able to link directly to any phase and follow it without the others. (The
+   *code* does build up: `phase2/agent.py` imports Phase 1's tools, and phases
+   4–6 work against your Phase 3 agent. That's fine; the prose is what has to
+   stand alone.)
 4. Add the two docs entries (see **Required docs entries**) and open a PR
    describing *what a learner gains* from the change.
 
@@ -95,10 +98,9 @@ Markdown-only PRs — sharper gate questions, FDE scenarios, a
 
 Merging to `main` requires a pull request with every check below green, all
 review conversations resolved, and one approving review from the code owner
-(@Tatendaz). These are enforced by the `protect-main` branch ruleset, applied
-when the change that introduced this file lands — if you are reading this on
-that PR itself, treat it as the agreed policy rather than something GitHub is
-already blocking on. The required checks:
+(@Tatendaz). These are enforced by the `protect-main` branch ruleset, which is
+active — GitHub blocks the merge button, so there is nothing to remember here.
+The required checks:
 
 | Check | What it runs |
 |---|---|
@@ -134,5 +136,6 @@ regularly graduate into the READMEs.
 
 ## License of contributions
 
-Code contributions land under MIT; prose under CC BY 4.0 (see README
-"Using or sharing this curriculum").
+Contributions land under the repo's [MIT license](LICENSE), which by its own
+wording covers "this software and associated documentation files" — the code
+*and* the prose.

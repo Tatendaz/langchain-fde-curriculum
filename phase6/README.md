@@ -7,9 +7,11 @@ non-coding skills that actually decide interviews and deals.
 
 Budget ~2 weeks: one for the build (you're assembling phases 2–5, not
 inventing), one for the deliverables and drills. **The FDE drills are not
-optional garnish** — in the 2026 interview loops at LangChain, OpenAI, and
-Anthropic, the rounds most candidates fail are exactly the ones drilled
-here: discovery, decomposition, and presenting to non-technical people.
+optional garnish** — by reported account of 2025–26 applied-AI loops, the
+rounds that trip up candidates who cleared the coding screens are among the
+ones drilled here: discovery, decomposition, and presenting to non-technical
+people. (Reported experience, not a published study — see the README's
+[sourcing note](../README.md#the-fde-layer--what-the-market-actually-tests).)
 
 ## The capstone
 
@@ -129,8 +131,8 @@ end? Does the eval plan gate the risky action?
 
 ### Drill 3 · The non-technical presentation
 
-LangChain's actual take-home includes presenting to a non-technical
-audience; Anthropic and OpenAI test it live. Prepare a **20-minute
+Applied-AI take-homes commonly include presenting to a non-technical
+audience, and several loops test it live. Prepare a **20-minute
 presentation of your capstone for Dana**: the problem, what you built (one
 diagram, zero jargon unaccompanied by a translation), a live demo or the
 video, "how we know it works" (the eval dashboard, framed as quality

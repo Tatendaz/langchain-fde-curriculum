@@ -1,22 +1,20 @@
 # Production-Grade AI Agents — An FDE Curriculum
 
-> Seven phases, seven shipped artifacts, and a mastery gate between each one.
+> Seven phases, seven shipped artifacts, and a mastery gate for each one.
 > Go from *"I use LLMs"* to *"I can design, evaluate, and ship production
 > agents on the LangChain / LangGraph / LangSmith stack — and deliver them as
 > a service."*
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg?logo=python&logoColor=white)](pyproject.toml)
-[![LangChain](https://img.shields.io/badge/LangChain-1.3-1C3C3C.svg?logo=langchain&logoColor=white)](https://python.langchain.com)
-[![LangGraph](https://img.shields.io/badge/LangGraph-1.x-1C3C3C.svg)](https://langchain-ai.github.io/langgraph/)
+[![LangChain 1.x](https://img.shields.io/badge/LangChain-1.x-1C3C3C.svg?logo=langchain&logoColor=white)](https://docs.langchain.com/oss/python/langchain/overview)
+[![LangGraph 1.x](https://img.shields.io/badge/LangGraph-1.x-1C3C3C.svg)](https://docs.langchain.com/oss/python/langgraph/overview)
 [![LangSmith](https://img.shields.io/badge/observability-LangSmith-1C3C3C.svg)](https://smith.langchain.com)
 [![uv](https://img.shields.io/badge/packaged%20with-uv-DE5FE9.svg?logo=uv&logoColor=white)](https://docs.astral.sh/uv/)
-[![Progress](https://img.shields.io/badge/progress-3%2F7%20phases-brightgreen.svg)](#progress-checklist)
-[![License: MIT](https://img.shields.io/badge/license-MIT%20%2B%20CC%20BY%204.0-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
 **Time:** ~60–70 focused hours · 8 weeks at ~8–9 hrs/week · **hard cap: 2 months**
 **Cost:** ~$0 on the default path — local [Ollama](https://ollama.com) models +
-LangSmith's free tier (Phase 5's *managed* deployment option needs a paid
-plan; the DIY path taught alongside it stays free)
+LangSmith's free tier ([the one exception](#what-it-costs-to-run))
 **You finish with:** a deployed, evaluated, monitored capstone agent + a case
 study + a demo video — a portfolio that answers the question every FDE
 interview and client call comes down to: *"How do you know it works?"*
@@ -37,19 +35,30 @@ flowchart LR
 
 The LangChain ecosystem moves fast, so this curriculum optimizes for
 **durable skills** — agent architecture, evaluation, observability,
-productionization — over memorizing today's API surface. Two things make it
+productionization — over memorizing today's API surface. Three things make it
 different from the many agent tutorials out there:
 
-1. **Mastery gates.** You don't move to the next phase by finishing the code —
-   you move on by *passing a gate*: a build checklist, a closed-book concept
-   check with hidden answer keys, and an "explain it to a client" scenario.
-   Almost no popular free curriculum gates progression on demonstrated
-   understanding; the learning-science evidence says it's one of the
+1. **Mastery gates, and a lot of them.** You don't advance by finishing the
+   code — you advance by *passing a gate*: a build checklist, a closed-book
+   concept check with hidden answer keys, and an "explain it to a client"
+   scenario. Across the seven gates that's **32 closed-book concept questions
+   and 6 client-facing FDE scenarios — 38 hidden answer keys in all**, with
+   later gates deliberately re-asking earlier phases (Phase 4 returns to 2 and
+   3; Phase 5 to 0, 1 and 4; Phase 6 asks one per phase). Few
+   popular free curricula gate progression on demonstrated understanding,
+   and the [learning-science evidence](docs/evidence.md) says it's one of the
    highest-leverage things a curriculum can do.
 2. **Evaluation as the spine, not a module.** The most-asked question in FDE
-   interviews (OpenAI's loop literally repeats it) is *"how do you know it
-   works?"* Phase 4 exists so you always have a real answer, and every phase
-   after it keeps the answer current.
+   interviews is *"how do you know it works?"* Phase 4 exists so you always
+   have a real answer, and every later phase keeps it current. Anyone can demo
+   an agent; FDEs get hired — and consultants get paid — for proving it works
+   and catching regressions before the client does.
+3. **Observability first, deployment as the moat.** Tracing goes on in Phase 0,
+   before anything interesting exists, so every debugging question here starts
+   with "open the trace." And plenty of people "know LangChain" — few can ship
+   a stateful, observable, autoscaling agent and answer the enterprise
+   questions (isolation, approvals, data residency) that follow. Every phase
+   ends in a standalone artifact, so the moat doubles as your portfolio.
 
 ## Who this is for
 
@@ -62,8 +71,8 @@ different from the many agent tutorials out there:
   LangGraph / LangSmith APIs, and LLM-specific evaluation — and this plan
   leans into exactly those.
 - **Aspiring or interviewing FDEs** (forward-deployed / applied AI /
-  solutions engineers). Phase 6's drills mirror the actual interview loops at
-  LangChain, OpenAI, and Anthropic: a build-for-a-fictional-customer
+  solutions engineers). Phase 6's drills mirror the rounds applied-AI
+  interview loops reportedly run: a build-for-a-fictional-customer
   take-home, a discovery-call simulation, and a non-technical presentation.
 
 **Not for you if:** you've never written Python (start with a Python course
@@ -89,8 +98,9 @@ agent-engineering* layer).
 
 Every phase has the same anatomy, in this order:
 
-1. **Run the worked example.** Each phase folder ships working, commented
-   code. Run it, read the trace, break it, fix it.
+1. **Run the worked example.** Phases 0–3 ship working, commented code: run
+   it, read the trace, break it, fix it. Phases 4–6 are build guides — you
+   write the code, which by then is the point.
 2. **Modify before you build.** Each phase suggests small modifications
    (swap a tool, change the retrieval k, reject an approval) before you build
    anything from scratch. Friction should be conceptual, not syntactic.
@@ -114,25 +124,6 @@ Every phase has the same anatomy, in this order:
    old concepts is deliberate (it's the second-best-supported technique);
    don't skip those questions just because they feel "done."
 
-<details><summary>The evidence, if you want it</summary>
-
-- **Retrieval practice & spacing** are the only two techniques rated
-  "high utility" in the canonical review of ten learning techniques:
-  [Dunlosky et al. 2013](https://journals.sagepub.com/doi/abs/10.1177/1529100612453266);
-  meta-analysis of the testing effect: [Adesope et al. 2017](https://journals.sagepub.com/doi/abs/10.3102/0034654316689306).
-- **Mastery gates** (advance only after passing a criterion, with a
-  corrective path) raise outcomes ~0.5 SD across 108 controlled studies:
-  [Kulik, Kulik & Bangert-Drowns 1990](https://journals.sagepub.com/doi/10.3102/00346543060002265);
-  framing: [Bloom's "2 Sigma Problem"](https://web.mit.edu/5.95/readings/bloom-two-sigma.pdf).
-- **Teach-back / explaining** ("learning by teaching") shows d ≈ 0.5–0.8:
-  [Kobayashi 2019](https://onlinelibrary.wiley.com/doi/10.1111/jpr.12221) —
-  and for an FDE it doubles as job practice.
-- **Explicit rubrics** improve self-assessment and self-regulation:
-  [Panadero & Jonsson 2013](https://eric.ed.gov/?id=EJ999454).
-- Readable trade summary of all of it: *[Make It Stick](https://www.hup.harvard.edu/books/9780674729018)*.
-
-</details>
-
 ## The 8-week map
 
 | Week | Phase | Deliverable you ship | Hours |
@@ -145,209 +136,120 @@ Every phase has the same anatomy, in this order:
 | 6–7 | **5 — Production & deploy** | Hardened agent on k8s (or LangSmith Deployment) | ~12 |
 | 7–8 | **6 — Capstone + FDE drills** | Capstone + case study + demo video + drill artifacts | ~12 |
 
-**Behind schedule?** Two checkpoints:
+**Behind schedule?** Two triage checkpoints, and one rule that outranks both:
 
 - **End of week 4:** not finished Phase 3 → cut Phase 3's stretch work
   (hybrid search, reranking) and move on; RAG depth is tunable, the spine is
   not.
 - **End of week 6:** not finished Phase 5 → take the managed deployment path
   (LangSmith Deployment) instead of DIY k8s, and reclaim a week.
-- The non-negotiable spine is **1 → 2 → 4 → 5 → capstone**: build an agent,
-  make it stateful, prove it works, ship it. (Phase 3 isn't skipped — it's
-  the one phase whose *depth* flexes.) A skipped week shifts the calendar;
-  it never reorders the spine.
-
-## Getting started
-
-Install [`uv`](https://docs.astral.sh/uv/) and [Ollama](https://ollama.com),
-then from the repo root:
-
-```bash
-ollama pull llama3.1                 # any tool-calling model works
-uv sync                              # create the venv + install dependencies
-cp .env.example .env                 # then set your Ollama + LangSmith values
-uv run python -m phase0.hello_agent  # run the Phase 0 starter
-uv run pytest                        # run the offline tests
-```
-
-Then open [`phase0/README.md`](phase0/README.md) and start the loop:
-run → modify → ship → gate.
-
-## Repo layout
-
-```text
-.
-├── README.md          # this curriculum
-├── pyproject.toml     # uv project (dependencies shared across phases)
-├── .env.example       # copy to .env and fill in your keys
-├── phase0/            # worked example: traced hello-world
-├── phase1/            # worked example: first agent via create_agent
-├── phase2/            # worked example: LangGraph rebuild (persistence + HITL)
-├── phase3/            # worked example: RAG + long-term memory + MCP
-├── phase4/            # build guide: evals, CI gate, monitoring
-├── phase5/            # build guide: guardrails, reliability, deployment
-├── phase6/            # build guide: capstone brief + FDE drills
-├── tests/             # offline unit tests for the pure logic in each phase
-├── .github/           # CI (tests + lint), PR gate (docs + new-code-has-tests)
-├── CONTRIBUTING.md    # setup, branch/docs rules, and how to get a PR merged
-└── LICENSE            # MIT (code) — prose is CC BY 4.0, see below
-```
-
-Phases 0–3 are **worked examples** (code included — run and modify them).
-Phases 4–6 are **build guides** (you write the code — that's the point; by
-then you're building, not copying). Every phase folder stands alone, so you
-can link someone straight to a phase.
+- **The rule:** the non-negotiable spine is **1 → 2 → 4 → 5 → capstone** —
+  build an agent, make it stateful, prove it works, ship it. (Phase 3 isn't
+  skipped — it's the one phase whose *depth* flexes.) A skipped week shifts
+  the calendar; it never reorders the spine.
 
 ---
 
-## Operating principles
+## Getting started
 
-1. **Observability-first.** LangSmith tracing goes on in Phase 0, before
-   anything interesting exists. Most learners bolt it on too late; every
-   debugging question in this curriculum starts with "open the trace."
-2. **Every phase ships a deliverable.** These artifacts are your portfolio,
-   and each phase's gate keeps you honest about understanding them.
-3. **Evaluation is the differentiator.** Anyone can demo an agent. FDEs get
-   hired — and consultants get paid — for proving it works and catching
-   regressions before clients do.
-4. **Deployment & reliability are the moat.** Plenty of people "know
-   LangChain." Few can ship a stateful, observable, autoscaling agent and
-   answer the enterprise questions (isolation, approvals, data residency)
-   that follow.
-5. **Tiered model routing for cost.** Learn the stack model-agnostic, then
-   build your cost story around routing by difficulty: a cheap/fast tier for
-   routing and evals, a workhorse for the agent loop, a top reasoning tier
-   for the hardest steps.
+### Prerequisites
+
+All of it is needed *before* the first command, not discovered mid-phase.
+
+- **[`uv`](https://docs.astral.sh/uv/)** — it provisions the interpreter too,
+  so you don't install Python yourself. `pyproject.toml` requires **≥ 3.11**;
+  `.python-version` pins **3.12**, which is what `uv` fetches and what the
+  tests run on.
+- **A tool-calling model.** Default is local **[Ollama](https://ollama.com)** —
+  install it, then make sure `ollama serve` is running. The model *must*
+  support tool calling; if it doesn't, Phase 0 prints `note: the model answered
+  without calling the tool this time.` and no tool call reaches the trace.
+- **A [LangSmith](https://smith.langchain.com) API key** — free Developer
+  tier, *Settings → API Keys*. Tracing is on from Phase 0; it isn't
+  decoration, it's the debugging surface every later gate asks you to read.
+  (**Docker** isn't needed until Phase 5, but that phase assumes it.)
+
+### Install and run
+
+```bash
+ollama pull llama3.1                 # any tool-calling model works
+ollama pull nomic-embed-text         # optional prefetch — not used until Phase 3
+
+uv sync                              # create the venv + install the lockfile
+cp .env.example .env                 # then fill it in — see just below
+
+uv run python -m phase0.hello_agent  # run the Phase 0 starter
+uv run pytest                        # 37 offline tests — no model, no network
+```
+
+`.env.example` is annotated and lists every variable. Three of them bite:
+`LANGSMITH_API_KEY` must be a real key before your first run (the placeholder
+403s — see below), `MODEL` must be a tool-calling model, and `EMBED_MODEL`
+(default `nomic-embed-text`) is read from Phase 3 onward. For a hosted
+provider instead of local Ollama, `OLLAMA_BASE_URL` + `OLLAMA_API_KEY` is the
+one-line switch.
+
+### If something's off
+
+- **`Failed to multipart ingest runs: … 403 … Forbidden`, every run.** Your
+  `LANGSMITH_API_KEY` is still the `lsv2_...` placeholder from `.env.example`
+  — that literal value really does 403. The agent still answers and still
+  prints `✅ Traced` (export is a fail-open background job), but there's no
+  trace to open, and the trace is what every gate asks you to read.
+- **The model answers without calling the tool.** `MODEL` doesn't support tool
+  calling, or is too small to use it reliably. Try `llama3.1`, `qwen2.5`, or a
+  Cloud model like `gpt-oss:20b`.
+- **Phase 3 fails on embeddings.** `ollama pull nomic-embed-text`.
+- **`uv sync --locked` fails** (that's what CI runs). `uv.lock` is stale
+  relative to `pyproject.toml`: run plain `uv sync`, commit the lockfile.
+  CI deliberately uses `--locked` rather than `--frozen` so a stale lock fails
+  loudly instead of installing quietly.
+
+Then open [`phase0/README.md`](phase0/README.md) and start the loop:
+**run → modify → ship → gate.**
 
 ---
 
 ## The curriculum
 
-### Phase 0 — Foundations & mental model · ~3 evenings · [`phase0/`](phase0/README.md)
+Each phase README is self-contained *as a document* — link someone straight to
+one and they can follow it. The **code** builds up: Phase 2 imports Phase 1's
+tools, and Phases 4–6 work against your Phase 3 agent.
 
-Solidify the API-level model of LLM apps — you use them daily; now understand
-them as primitives.
+| Phase | What you learn and build | You ship | When |
+|---|---|---|---|
+| [**0 · Foundations**](phase0/README.md) | Tokens, context windows, temperature, structured output (Pydantic), tool calling — and LangSmith tracing wired on day one | A traced hello-world: one chat call, one tool call, structured output | Week 1 · ~8h |
+| [**1 · First agent**](phase1/README.md) | `create_agent` and the tool-calling loop, tool definition and binding, reading a nested trace as a debugging skill, treating every tool argument as untrusted input | One agent calling 3 real tools (HTTP fetch, calculator, word count), fully traced | Week 2 · ~8h |
+| [**2 · LangGraph**](phase2/README.md) | `StateGraph`, reducers, conditional routing and cycles; checkpointers and threads; `interrupt()` + `Command(resume=…)`; streaming and time-travel replay. **The most important build week.** | The Phase 1 agent rebuilt as an explicit graph, with persistence and one approval interrupt gating a write | Week 3 · ~10h |
+| [**3 · RAG, memory, MCP**](phase3/README.md) | Loaders → chunking → embeddings → vector store → retrieval; cross-thread memory via the LangGraph `Store` and the multi-tenancy trap; MCP tools via `langchain-mcp-adapters` | An agent with a real knowledge base, long-term memory, and one MCP-backed tool | Week 4 · ~10h |
+| [**4 · Evals & observability**](phase4/README.md)<br>**do not skip** | LangSmith datasets, experiments and `evaluate()`; `openevals` and `agentevals` (trajectory evals); regression gating in CI; annotation queues and the bad-trace → dataset → test loop | An eval suite + a CI gate that blocks regressions + a monitoring view. *Your strongest sales asset.* | Week 5 · ~10h |
+| [**5 · Production & deploy**](phase5/README.md) | Guardrails as middleware, fallbacks, retries, call limits, prompt-injection defense in depth; then two deployment paths — managed (LangSmith Deployment) or DIY (FastAPI + `PostgresSaver` + Redis on k8s) | Your agent deployed with persistence, autoscaling, secrets and end-to-end tracing — surviving a pod kill mid-approval | Weeks 6–7 · ~12h |
+| [**6 · Capstone + FDE drills**](phase6/README.md) | One vertical agent against a fictional client brief, exercising the whole stack — plus four drills: discovery call, timed decomposition case, non-technical presentation, packaging one-pager | Capstone repo + one-page case study + 3-minute demo video + the four written drill artifacts. The repo–case-study–video trio *is* your sales kit. | Weeks 7–8 · ~12h |
 
-- Tokens, context windows, temperature, **structured output (Pydantic)**, and
-  **tool / function calling** — the bedrock every agent is built on.
-- Setup: `uv`, Python 3.11+, Ollama (or any provider), and a **LangSmith
-  account with tracing env vars** — on from day one.
-- **Deliverable:** a traced "hello world" — one chat call that makes one tool
-  call and returns structured output, fully visible in a LangSmith trace.
-- **Gate:** [phase0/README.md → Phase gate](phase0/README.md#phase-gate--pass-this-before-phase-1)
-
-### Phase 1 — LangChain core + your first agent · ~Week 2 · [`phase1/`](phase1/README.md)
-
-- Chat models, messages, prompt templates, structured output, **tool
-  definition & binding**.
-- **`create_agent`** — the standard tool-calling agent loop (import from
-  `langchain.agents`; the older `langgraph.prebuilt.create_react_agent` is
-  deprecated). Middleware is a Phase 5 topic; here you learn the loop itself.
-- **LangSmith trace-reading as a debugging skill:** runs, threads, latency,
-  token counts — and why the whole run is *one nested tree*.
-- Tool safety: why every tool argument is untrusted input.
-- **Deliverable:** a single agent calling 2–3 *real* tools (HTTP fetch +
-  calculator + word count), fully traced.
-- **Gate:** [phase1/README.md → Phase gate](phase1/README.md#phase-gate--pass-this-before-phase-2)
-
-### Phase 2 — LangGraph: the production agent runtime · ~Week 3 · [`phase2/`](phase2/README.md)
-
-The framework you'll actually ship. It's a state machine — natural territory
-if you have an infra background. **The most important build week.**
-
-- `StateGraph`: state schema, reducers, nodes, edges, **conditional routing,
-  cycles** — the same loop as Phase 1, now with the machinery visible.
-- **Persistence / checkpointers** (`MemorySaver` → **`PostgresSaver`**),
-  threads, short-term memory. (Docs now call the in-memory one
-  `InMemorySaver`; same thing.)
-- **Human-in-the-loop:** `interrupt()` + `Command(resume=...)` — approval
-  gates before risky actions, and why resume *replays the node*. Enterprises
-  require this; you'll build it by hand so the packaged
-  `HumanInTheLoopMiddleware` (Phase 5) is never magic to you.
-- **Streaming** (tokens, steps) and **time-travel / replay** debugging.
-- **Deliverable:** the Phase 1 agent rebuilt as an explicit graph with
-  persistence + one approval interrupt gating a write action.
-- **Gate:** [phase2/README.md → Phase gate](phase2/README.md#phase-gate--pass-this-before-phase-3)
-
-### Phase 3 — RAG, memory & tools at production quality · ~Week 4 · [`phase3/`](phase3/README.md)
-
-- **RAG pipeline:** loaders → chunking → embeddings → vector store
-  (**`pgvector`** if you already run Postgres) → retrieval; stretch: hybrid
-  search + reranking.
-- **Long-term memory** via the LangGraph `Store` — cross-thread memory, and
-  the multi-tenancy trap (per-user namespaces) every client will ask about.
-- **MCP integration** with `langchain-mcp-adapters` — wire an MCP server in
-  as agent tools (stdio locally; streamable HTTP is the remote standard).
-- **Deliverable:** an agent with a real knowledge base + long-term memory +
-  one MCP-backed tool.
-- **Gate:** [phase3/README.md → Phase gate](phase3/README.md#phase-gate--pass-this-before-phase-4)
-
-### Phase 4 — Evaluation & observability: the FDE differentiator · ~Week 5 · [`phase4/`](phase4/README.md) · **do not skip**
-
-The SLO mindset applied to agents: *"here's proof it works, and here's how
-we'll know if it regresses."*
-
-- **LangSmith datasets, experiments, `evaluate()`** — plus the open-source
-  evaluator libraries **`openevals`** (LLM-as-judge, RAG groundedness) and
-  **`agentevals`** (**trajectory evals** — did the agent take the right
-  *steps*, not just give the right answer?).
-- **Regression gating in CI** (pytest + LangSmith) — block merges on eval
-  scores.
-- **Online evaluation & monitoring:** dashboards, cost & latency tracking,
-  **annotation queues** — and the production loop: annotated bad trace →
-  dataset example → regression test.
-- **Deliverable:** an eval suite + a CI gate that blocks regressions + a
-  monitoring view. *This single deliverable is your strongest sales asset.*
-- **Gate:** [phase4/README.md → Phase gate](phase4/README.md#phase-gate--pass-this-before-phase-5)
-
-### Phase 5 — Productionization & deployment · ~Weeks 6–7 · [`phase5/`](phase5/README.md)
-
-- **Guardrails & reliability as middleware:** `HumanInTheLoopMiddleware`,
-  `PIIMiddleware`, model fallbacks & retries, tool retries, call limits —
-  plus prompt-injection defense in depth, timeouts, and model routing.
-- **Deployment — two paths, pick per client:**
-  - *Managed:* **LangSmith Deployment** (the platform formerly called
-    LangGraph Platform) — `langgraph dev` locally, `langgraph deploy` to
-    ship; least ops. [Agent Chat UI](https://github.com/langchain-ai/agent-chat-ui)
-    gives you a front end for free.
-  - *DIY (your moat):* **FastAPI + LangGraph + `PostgresSaver` + Redis**,
-    containerized, on k8s (`kind` is fine) with HPA, secrets, SSE streaming,
-    health probes, and **multi-tenant isolation**.
-- **Deliverable:** your agent deployed with persistence, autoscaling,
-  secrets, and end-to-end tracing — and it survives a pod kill mid-approval.
-- **Gate:** [phase5/README.md → Phase gate](phase5/README.md#phase-gate--pass-this-before-phase-6)
-
-### Phase 6 — Capstone + the FDE layer · ~Weeks 7–8 · [`phase6/`](phase6/README.md)
-
-- **Capstone:** one end-to-end vertical agent built against a **fictional
-  client brief** (provided — or bring your own), exercising the whole stack:
-  LangGraph + RAG + memory + HITL + evals + deployed + monitored.
-- **FDE drills** — the skills that turn a skill set into a service, drilled
-  the way interviews test them: a **discovery-call roleplay**, a timed
-  **decomposition case study**, a **non-technical presentation**, and a
-  **packaging/pricing one-pager**.
-- **Deliverable:** capstone repo + one-page case study + 3-minute demo video.
-  This trio *is* your sales kit — and your interview take-home rehearsal.
-- **Gate:** [phase6/README.md → Final gate](phase6/README.md#final-gate--the-whole-loop) —
-  a cumulative check across all seven phases.
+The rest lives in `docs/`: the [full syllabus](docs/curriculum.md) (every
+topic, every gate link, repo layout) · the
+[learning-science evidence](docs/evidence.md) behind the gates · [what to learn
+after Phase 6, and the curated reading list](docs/resources.md).
 
 ---
 
 ## The FDE layer — what the market actually tests
 
-Technical depth gets you a working agent. These get you hired — or paid.
-(Phase 6 drills all four; the sources are real 2025–26 interview loops and
-job postings.)
+Technical depth gets you a working agent. These get you hired — or paid. Phase
+6 drills four of them directly: discovery call, decomposition case,
+non-technical presentation, packaging one-pager.
+*Sourcing: reported experience from 2025–26 FDE loops and job postings, not a
+cited study. Weight it accordingly.*
 
 - **Discovery & scoping** — turning *"can AI do X for us?"* into a concrete
-  agent spec with success criteria. Anthropic's applied-AI loop runs a
-  simulated discovery call — and it filters out most candidates who passed
-  the coding rounds. The failure mode is always the same: pitching instead
-  of asking.
-- **Decomposition under ambiguity** — the make-or-break interview round at
-  OpenAI and elsewhere: vague enterprise problem → clarifying questions →
-  assumptions → walking skeleton → eval plan. Jumping straight to
-  architecture is the #1 rejection reason.
+  agent spec with success criteria. Applied-AI loops commonly include a
+  simulated discovery call, and it's reportedly where many candidates who
+  cleared the coding rounds come unstuck. The failure mode people describe is
+  always the same: pitching instead of asking.
+- **Decomposition under ambiguity** — the round that decides a lot of loops:
+  vague enterprise problem → clarifying questions → assumptions → walking
+  skeleton → eval plan. Jumping to architecture before asking is a common
+  rejection reason.
 - **Demo-driven delivery** — ship a rough working demo in days, iterate with
   the client in the loop, and always demo with the trace open ("watch it,"
   not "trust me").
@@ -361,75 +263,37 @@ job postings.)
   outcome-based; docs, runbooks, and a maintainability story (an ops
   background is a selling point here).
 
----
-
-## After the curriculum
-
-Things worth knowing exist, deliberately left out of the 8 weeks:
-
-- **[`deepagents`](https://docs.langchain.com/oss/python/deepagents/overview)** —
-  LangChain's opinionated agent harness (planning, subagents, virtual
-  filesystem). After Phase 2 you'll understand exactly what it packages.
-- **Multi-agent patterns** (supervisor / swarm) — add when a client's problem
-  actually shapes that way; single well-evaluated agents win most engagements.
-- **[A2A](https://a2a-protocol.org)** (agent-to-agent protocol) and the
-  evolving MCP spec — track them; enterprises are starting to ask.
-- **TypeScript** — most FDE postings pair Python with JS/TS. Port your
-  capstone's API layer when you're job-hunting.
-- **LangSmith's agent-improvement products** (Insights Agent, Polly,
-  Engine) — the managed version of the eval loop you built by hand in
-  Phase 4.
-
-## Curated resources
-
-*(Free unless noted. The ecosystem moves fast — treat official docs as
-primary. Verified July 2026.)*
-
-- **[LangChain Academy](https://academy.langchain.com/)** — *Introduction to
-  LangGraph* is the single best use of your early hours. Newer:
-  *Introduction to Agent Observability & Evaluations* (pairs with Phase 4),
-  *Introduction to LangSmith Deployment* (pairs with Phase 5), and the
-  project courses (*Deep Agents*, *Ambient Agents*, *Deep Research*).
-- **Official docs** — [LangGraph](https://docs.langchain.com/oss/python/langgraph/overview)
-  (concepts + how-tos), [LangSmith evaluation](https://docs.langchain.com/langsmith/evaluation),
-  [middleware](https://docs.langchain.com/oss/python/langchain/middleware),
-  [`openevals`](https://github.com/langchain-ai/openevals) /
-  [`agentevals`](https://github.com/langchain-ai/agentevals).
-- **[DeepLearning.AI short courses](https://www.deeplearning.ai/courses)** —
-  *AI Agents in LangGraph*, *Long-Term Agentic Memory with LangGraph*, and
-  the evals courses.
-- **[Hugging Face Agents Course](https://huggingface.co/learn/agents-course/en/unit0/introduction)** —
-  good complementary breadth (other frameworks) + a free certificate.
-- **FDE career prep** — [Exponent's FDE interview guide](https://www.tryexponent.com/blog/forward-deployed-engineer-interview-the-definitive-2026-guide-fde),
-  [Hamel Husain's evals field guide](https://hamel.dev/blog/posts/field-guide/),
-  [Sierra's Agent Development Life Cycle](https://sierra.ai/blog/agent-development-life-cycle),
-  [a16z on FDEs & services-led growth](https://a16z.com/services-led-growth/),
-  [Nabeel Qureshi's *Reflections on Palantir*](https://nabeelqu.co/reflections-on-palantir).
-- **LangSmith Studio** (formerly LangGraph Studio) — the visual agent
-  debugger; install during Phase 2.
-
 ## Stack & versions
 
-`Python 3.11 + uv` · `langchain 1.3.x` + `langgraph 1.x` + a provider
-integration (`langchain-ollama` here) · `langsmith` · `langchain-mcp-adapters`
-· `openevals` + `agentevals` (Phase 4) · `pgvector` on Postgres · `FastAPI`
-for serving · `pytest` for eval CI · `Helm`/k8s or LangSmith Deployment for
-Phase 5.
+`Python ≥3.11` (3.12 pinned in `.python-version`) `+ uv` · `langchain 1.x` +
+`langgraph 1.x` + a provider integration (`langchain-ollama` here) ·
+`langsmith` · `langchain-mcp-adapters` · `pytest`. `pyproject.toml` declares
+the ranges, both core frameworks bounded `<2` so a fresh `uv sync` never
+silently jumps a major; **`uv.lock` pins what was actually tested** —
+`langchain` 1.3.9, `langgraph` 1.2.5, `langsmith` 0.8.16, `langchain-ollama`
+1.1.0, `langchain-mcp-adapters` 0.3.0, `mcp` 1.28.1. If you upgrade, re-run the
+phase demos: the 1.x line is stable for everything taught here, but middleware
+signatures have churned between minors.
 
-The lockfile pins exact versions this repo was tested with. If you upgrade,
-re-run the phase demos — the 1.x line is stable for everything taught here,
-but middleware signatures have churned between minors.
+Phases 4–6 add dependencies **you install as you build** — `openevals` and
+`agentevals` in Phase 4; `pgvector`/Postgres, FastAPI, Redis and Helm/k8s in
+Phase 5. They are deliberately *not* in the lockfile: choosing and installing
+that stack is part of the work. And one architectural note that pays for
+itself — **model routing is a cost lever**: a cheap/fast tier for routing and
+evals, a workhorse for the agent loop, a top reasoning tier for the hardest
+steps.
 
 ---
 
 ## Progress checklist
 
-Gate passed = build boxes ticked **and** concept check cleared **and**
-scenario answered. Be honest — nobody's grading you but the next client.
+Every box starts empty — **these are yours, tick them as you go.** Gate
+passed = build boxes ticked **and** concept check cleared **and** scenario
+answered. Be honest; nobody's grading you but the next client.
 
-- [x] **Phase 0** — Traced "hello world" (tool call + structured output)
-- [x] **Phase 1** — Single agent calling 2–3 real tools, one nested trace
-- [x] **Phase 2** — LangGraph rebuild with persistence + approval interrupt
+- [ ] **Phase 0** — Traced "hello world" (tool call + structured output)
+- [ ] **Phase 1** — Single agent calling 3 real tools, one nested trace
+- [ ] **Phase 2** — LangGraph rebuild with persistence + approval interrupt
 - [ ] **Phase 3** — Agent with knowledge base + long-term memory + MCP tool
 - [ ] **Phase 4** — Eval suite + CI regression gate + monitoring
 - [ ] **Phase 5** — Agent deployed with persistence, autoscaling, tracing
@@ -437,17 +301,19 @@ scenario answered. Be honest — nobody's grading you but the next client.
 
 ## Using or sharing this curriculum
 
-- **Fork it and work through it** — the checklists above become your tracker.
-  Working with a friend or posting weekly progress publicly measurably
-  improves follow-through; treat it as part of the method.
+- **Fork it and work through it** — the checklist above becomes your tracker.
+  Working with a friend or posting weekly progress publicly tends to
+  improve follow-through; treat it as part of the method.
 - **Teach with it** — run it as a study group or internal cohort; each phase
-  folder stands alone. Attribution appreciated.
+  README is self-contained as a document, so you can hand out one at a time.
+  Attribution appreciated.
 - **Contribute** — fixes, sharper gate questions, and better scenarios are
-  welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). Finished the capstone?
-  Open a PR adding a link to yours in `phase6/completions.md`.
-- **License:** code is [MIT](LICENSE); prose (READMEs, questions, answer
-  keys) is [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) —
-  reuse freely with attribution.
+  welcome; see [CONTRIBUTING.md](CONTRIBUTING.md), including the PR gate's
+  `docs/features/` + `docs/summaries/` requirement. Finished the capstone? Add
+  a link to yours in [`phase6/completions.md`](phase6/completions.md).
+- **License:** [MIT](LICENSE) — which by its own wording covers "this software
+  and associated documentation files," so the code *and* the prose. Reuse
+  freely; keep the copyright notice.
 
 ---
 
