@@ -38,6 +38,8 @@ than by repo name.
   the spine, the pass rule — so the two can't drift into contradicting each other.
 - **No `og:image`.** `yapui` and `claude-usage` each ship a `social-preview.png`; this
   repo has none, and inventing one was out of scope. Link previews will fall back to the
-  page title and description until one is added.
+  page title and description until one is added. For the same reason `twitter:card` is
+  `summary` rather than `summary_large_image` — declaring the large card with no image
+  just degrades to a plain card anyway. Flip it when an image ships.
 - **Pages still needs enabling** (Settings → Pages → `main` / `/docs`) after this merges.
   The URL is already baked into the canonical tag and structured data.
