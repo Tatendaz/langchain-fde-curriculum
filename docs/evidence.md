@@ -18,7 +18,8 @@ Referenced from the README's
   framing: [Bloom's "2 Sigma Problem"](https://web.mit.edu/5.95/readings/bloom-two-sigma.pdf).
   The corrective path here is "re-run the code the next day and retake the
   gate," not "try harder."
-- **Teach-back / explaining** ("learning by teaching") shows d ≈ 0.5–0.8:
+- **Teach-back / explaining** ("learning by teaching") shows g ≈ 0.35
+  (preparing to teach) to 0.56 (actually teaching):
   [Kobayashi 2019](https://onlinelibrary.wiley.com/doi/10.1111/jpr.12221) —
   and for an FDE it doubles as job practice, which is why each gate ends in a
   client-facing scenario rather than another quiz question.

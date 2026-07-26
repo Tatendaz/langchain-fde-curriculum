@@ -224,10 +224,10 @@ tools, and Phases 4–6 work against your Phase 3 agent.
 | [**3 · RAG, memory, MCP**](phase3/README.md) | Loaders → chunking → embeddings → vector store → retrieval; cross-thread memory via the LangGraph `Store` and the multi-tenancy trap; MCP tools via `langchain-mcp-adapters` | An agent with a real knowledge base, long-term memory, and one MCP-backed tool | Week 4 · ~10h |
 | [**4 · Evals & observability**](phase4/README.md)<br>**do not skip** | LangSmith datasets, experiments and `evaluate()`; `openevals` and `agentevals` (trajectory evals); regression gating in CI; annotation queues and the bad-trace → dataset → test loop | An eval suite + a CI gate that blocks regressions + a monitoring view. *Your strongest sales asset.* | Week 5 · ~10h |
 | [**5 · Production & deploy**](phase5/README.md) | Guardrails as middleware, fallbacks, retries, call limits, prompt-injection defense in depth; then two deployment paths — managed (LangSmith Deployment) or DIY (FastAPI + `PostgresSaver` + Redis on k8s) | Your agent deployed with persistence, autoscaling, secrets and end-to-end tracing — surviving a pod kill mid-approval | Weeks 6–7 · ~12h |
-| [**6 · Capstone + FDE drills**](phase6/README.md) | One vertical agent against a fictional client brief, exercising the whole stack — plus four drills: discovery call, timed decomposition case, non-technical presentation, packaging one-pager | Capstone repo + one-page case study + 3-minute demo video. That trio *is* your sales kit. | Weeks 7–8 · ~12h |
+| [**6 · Capstone + FDE drills**](phase6/README.md) | One vertical agent against a fictional client brief, exercising the whole stack — plus four drills: discovery call, timed decomposition case, non-technical presentation, packaging one-pager | Capstone repo + one-page case study + 3-minute demo video + the four written drill artifacts. The repo–case-study–video trio *is* your sales kit. | Weeks 7–8 · ~12h |
 
 The rest lives in `docs/`: the [full syllabus](docs/curriculum.md) (every
-topic, every gate link, repo layout, API-currency notes) · the
+topic, every gate link, repo layout) · the
 [learning-science evidence](docs/evidence.md) behind the gates · [what to learn
 after Phase 6, and the curated reading list](docs/resources.md).
 
