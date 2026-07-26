@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Production-Grade AI Agents — a free FDE curriculum on LangChain, LangGraph &amp; LangSmith</title>
+<meta name="description" content="Seven phases, seven shipped artifacts, and a mastery gate between each one. A free, self-paced curriculum that takes you from &quot;I use LLMs&quot; to designing, evaluating, and deploying production agents on LangChain / LangGraph / LangSmith. ~60–70 hours, runs at $0 on local Ollama.">
+<link rel="canonical" href="https://tatendaz.github.io/langchain-fde-curriculum/">
+<meta name="theme-color" content="#0d0f12">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Production-Grade AI Agents — an FDE curriculum">
+<meta property="og:description" content="Seven phases, seven shipped artifacts, a mastery gate between each one. Go from &quot;I use LLMs&quot; to shipping evaluated, monitored agents on LangChain / LangGraph / LangSmith. Free, ~60–70 hours.">
+<meta property="og:url" content="https://tatendaz.github.io/langchain-fde-curriculum/">
+<!-- summary, not summary_large_image: this repo has no social-preview.png yet, and a
+     large-image card with no og:image/twitter:image just falls back to a plain card.
+     Switch to summary_large_image when an image ships. -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Production-Grade AI Agents — an FDE curriculum">
+<meta name="twitter:description" content="Seven phases, seven shipped artifacts, a mastery gate between each one. Free, self-paced, ~60–70 hours, $0 to run on local Ollama.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": "Production-Grade AI Agents — An FDE Curriculum",
+  "description": "A free, self-paced, seven-phase curriculum for engineers who use LLMs but have not yet architected and deployed a stateful agent to production. Covers agent architecture, LangGraph state and human-in-the-loop, RAG, memory, MCP, evaluation, observability, deployment, and forward-deployed-engineer client drills. Each phase ends in a shipped artifact and a mastery gate.",
+  "url": "https://tatendaz.github.io/langchain-fde-curriculum/",
+  "inLanguage": "en",
+  "teaches": "Designing, evaluating, and deploying production LLM agents on the LangChain, LangGraph and LangSmith stack",
+  "educationalLevel": "Intermediate to advanced — comfortable writing Python",
+  "isAccessibleForFree": true,
+  "license": "https://github.com/Tatendaz/langchain-fde-curriculum/blob/main/LICENSE",
+  "provider": {
+    "@type": "Person",
+    "name": "Tatenda Zhou",
+    "url": "https://tatendaz.github.io/"
+  },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "category": "Free" },
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": "online",
+    "courseWorkload": "PT65H"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What does it cost to run?",
+      "acceptedAnswer": { "@type": "Answer", "text": "About $0 on the default path. Models run on local Ollama — if your machine is weak, a hosted provider works with a one-line .env change for a few dollars. LangSmith's free Developer tier covers the tracing, datasets and evaluations. Phase 5's DIY path runs on a local kind/minikube cluster, so no cloud bill; the managed path needs a paid plan and is presented as the client-engagement option, not a learning requirement." }
+    },
+    {
+      "@type": "Question",
+      "name": "What's a mastery gate, exactly?",
+      "acceptedAnswer": { "@type": "Answer", "text": "A build check (definition-of-done as checkboxes), a closed-book concept check with answers hidden behind collapsible blocks, and an FDE scenario. Write your answer down before peeking — generating the answer first is retrieval practice, the single best-supported technique in the learning literature, and it only works if you don't read ahead." }
+    },
+    {
+      "@type": "Question",
+      "name": "Why gates instead of just more tutorials?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Retrieval practice and spacing are the only two techniques rated \"high utility\" in the canonical review of learning techniques, and mastery gates raise outcomes roughly half a standard deviation across 108 controlled studies. The README cites the papers if you want them." }
+    },
+    {
+      "@type": "Question",
+      "name": "What do I finish with?",
+      "acceptedAnswer": { "@type": "Answer", "text": "A deployed, evaluated, monitored capstone agent, plus a case study and a demo video — a portfolio that answers the question every FDE interview and client call comes down to: \"How do you know it works?\"" }
+    },
+    {
+      "@type": "Question",
+      "name": "Is it free and can I reuse it?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Code is MIT and the written curriculum is CC BY 4.0 — see the LICENSE." }
+    }
+  ]
+}
+</script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0d0f12; --panel: #16191e; --border: rgba(255,255,255,0.11);
+    --text: #f2efe9; --muted: #9a948a; --accent: #3aa981; --green: #4cc38a;
+    /* The dark accent is light enough that white label text lands around 2.8:1.
+       Dark-on-accent gets it to ~7:1 and keeps the button legible. */
+    --on-accent: #06140f;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #faf7f2; --panel: #ffffff; --border: rgba(0,0,0,0.12);
+      --text: #1c1a17; --muted: #6b665e; --accent: #1f7a54; --green: #1f8a56;
+      --on-accent: #ffffff;
+    }
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 64px 24px 80px; }
+  header { text-align: center; margin-bottom: 48px; }
+  h1 { font-size: clamp(34px, 6vw, 56px); font-weight: 800; letter-spacing: -1.5px; }
+  h1 .mark { color: var(--accent); }
+  .tagline { font-size: clamp(18px, 3vw, 24px); font-weight: 600; color: var(--muted); margin-top: 12px; }
+  .tagline b { color: var(--text); }
+  .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+  .btn {
+    display: inline-block; padding: 12px 22px; border-radius: 10px; font-weight: 700;
+    text-decoration: none; font-size: 16px;
+  }
+  .btn.primary { background: var(--accent); color: var(--on-accent); }
+  .btn.ghost { border: 1px solid var(--border); color: var(--text); }
+  .stats { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 26px; }
+  .stat {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 10px 16px; font-size: 15px; color: var(--muted);
+  }
+  .stat b { color: var(--text); display: block; font-size: 17px; }
+  h2 { font-size: 26px; font-weight: 800; margin: 56px 0 16px; letter-spacing: -0.5px; }
+  p + p { margin-top: 12px; }
+  ul.features { list-style: none; display: grid; gap: 12px; }
+  ul.features li {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px;
+  }
+  ul.features b { display: block; }
+  ol.gate { margin: 0 0 0 20px; display: grid; gap: 10px; }
+  ol.gate b { color: var(--text); }
+  .scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; min-width: 620px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--border); }
+  th { background: var(--panel); font-weight: 700; }
+  tr:last-child td { border-bottom: none; }
+  td.phase { font-weight: 700; white-space: nowrap; }
+  td.hrs { color: var(--muted); white-space: nowrap; }
+  pre {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto; font-size: 14.5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; line-height: 1.7;
+  }
+  pre .c { color: var(--muted); }
+  a { color: var(--accent); }
+  .fact { color: var(--muted); }
+  .faq h3 { font-size: 18px; font-weight: 700; margin: 24px 0 6px; letter-spacing: -0.2px; }
+  .faq p { color: var(--muted); }
+  .faq p b, .faq p code { color: var(--text); }
+  footer { margin-top: 64px; text-align: center; color: var(--muted); font-size: 15px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Production-Grade <span class="mark">AI Agents</span></h1>
+    <p class="tagline">Seven phases. Seven shipped artifacts. <b>A mastery gate between each one.</b></p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/Tatendaz/langchain-fde-curriculum">Start on GitHub →</a>
+      <a class="btn ghost" href="https://github.com/Tatendaz/langchain-fde-curriculum/blob/main/phase0/README.md">Phase 0</a>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>~60–70 hrs</b>8 weeks, hard cap 2 months</div>
+      <div class="stat"><b>~$0</b>local Ollama + LangSmith free tier</div>
+      <div class="stat"><b>7 artifacts</b>they become your portfolio</div>
+    </div>
+  </header>
+
+  <h2>What it is</h2>
+  <p>A free, self-paced curriculum that takes you from <i>"I use LLMs"</i> to <i>"I can design, evaluate, and ship production agents on the <a href="https://python.langchain.com">LangChain</a> / <a href="https://langchain-ai.github.io/langgraph/">LangGraph</a> / <a href="https://smith.langchain.com">LangSmith</a> stack — and deliver them as a service."</i></p>
+  <p>The ecosystem moves fast, so it optimizes for <b>durable skills</b> — agent architecture, evaluation, observability, productionization — over memorizing today's API surface. Two things make it different from the many agent tutorials out there.</p>
+
+  <ul class="features">
+    <li><b>🎯 Mastery gates</b> You don't move on by finishing the code. You move on by passing a gate — a build checklist, a closed-book concept check with hidden answer keys, and an "explain it to a client" scenario. Almost no free curriculum gates progression on demonstrated understanding.</li>
+    <li><b>📊 Evaluation as the spine, not a module</b> The most-asked question in FDE interviews is <i>"how do you know it works?"</i> Phase 4 exists so you always have a real answer, and every phase after it keeps that answer current.</li>
+  </ul>
+
+  <h2>The 8-week map</h2>
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr><th>Week</th><th>Phase</th><th>Deliverable you ship</th><th>Hours</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td class="phase">0 — Foundations</td><td>Traced hello-world (tool call + structured output)</td><td class="hrs">~8</td></tr>
+        <tr><td>2</td><td class="phase">1 — First agent</td><td>One agent, 3 real tools, one nested trace</td><td class="hrs">~8</td></tr>
+        <tr><td>3</td><td class="phase">2 — LangGraph</td><td>Rebuilt agent: persistence + approval interrupt</td><td class="hrs">~10</td></tr>
+        <tr><td>4</td><td class="phase">3 — RAG, memory, MCP</td><td>Agent with knowledge base + long-term memory + MCP tool</td><td class="hrs">~10</td></tr>
+        <tr><td>5</td><td class="phase">4 — Evals &amp; observability</td><td>Eval suite + CI regression gate + monitoring</td><td class="hrs">~10</td></tr>
+        <tr><td>6–7</td><td class="phase">5 — Production &amp; deploy</td><td>Hardened agent on k8s (or LangSmith Deployment)</td><td class="hrs">~12</td></tr>
+        <tr><td>7–8</td><td class="phase">6 — Capstone + FDE drills</td><td>Capstone + case study + demo video + drill artifacts</td><td class="hrs">~12</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="fact">The non-negotiable spine is <b>1 → 2 → 4 → 5 → capstone</b>: build an agent, make it stateful, prove it works, ship it. Phase 3 isn't skipped — it's the one phase whose <i>depth</i> flexes when you fall behind.</p>
+
+  <h2>How each phase works</h2>
+  <ol class="gate">
+    <li><b>Run the worked example.</b> Each phase folder ships working, commented code. Run it, read the trace, break it, fix it.</li>
+    <li><b>Modify before you build.</b> Swap a tool, change the retrieval <code>k</code>, reject an approval — friction should be conceptual, not syntactic.</li>
+    <li><b>Ship the deliverable.</b> Every phase ends in a standalone artifact with an explicit definition-of-done. No tutorial limbo.</li>
+    <li><b>Pass the gate.</b> Build check, concept check, FDE scenario. Miss more than one? Re-run the code the next day and retake it — that's the mastery loop working, not you failing.</li>
+  </ol>
+
+  <h2>Who it's for</h2>
+  <ul class="features">
+    <li><b>Engineers comfortable in Python</b> who use LLMs daily but haven't yet architected and deployed a <b>stateful agent to production</b>.</li>
+    <li><b>Infra / SRE / backend folks especially</b> The hardest parts of shipping — k8s, observability, reliability, secrets — are already your home turf. Your real gaps are narrower, and this plan leans into exactly those.</li>
+    <li><b>Aspiring or interviewing FDEs</b> Phase 6's drills mirror the actual loops: a build-for-a-fictional-customer take-home, a discovery-call simulation, and a non-technical presentation.</li>
+  </ul>
+  <p class="fact"><b>Not for you if</b> you've never written Python, or you want ML research and model training — this is the applied agent-engineering layer.</p>
+
+  <h2>Getting started</h2>
+  <pre><span class="c"># install uv + Ollama first, then from the repo root</span>
+ollama pull llama3.1                 <span class="c"># any tool-calling model works</span>
+uv sync                              <span class="c"># create the venv + install dependencies</span>
+cp .env.example .env                 <span class="c"># then set your Ollama + LangSmith values</span>
+uv run python -m phase0.hello_agent  <span class="c"># run the Phase 0 starter</span>
+uv run pytest                        <span class="c"># run the offline tests</span></pre>
+  <p class="fact">Then open <code>phase0/README.md</code> and start the loop: run → modify → ship → gate.</p>
+
+  <section class="faq">
+    <h2>FAQ</h2>
+    <h3>What does it cost to run?</h3>
+    <p>About <b>$0</b> on the default path. Models run on local <a href="https://ollama.com">Ollama</a> — if your machine is weak, a hosted provider works with a one-line <code>.env</code> change for a few dollars. LangSmith's free Developer tier covers the tracing, datasets and evaluations. Phase 5's DIY path runs on a local <code>kind</code>/<code>minikube</code> cluster, so no cloud bill; the managed path needs a paid plan and is presented as the client-engagement option, not a learning requirement.</p>
+    <h3>What's a mastery gate, exactly?</h3>
+    <p>A build check (definition-of-done as checkboxes), a <b>closed-book</b> concept check with answers hidden behind collapsible blocks, and an FDE scenario. Write your answer down <i>before</i> peeking — generating the answer first is retrieval practice, the single best-supported technique in the learning literature, and it only works if you don't read ahead.</p>
+    <h3>Why gates instead of just more tutorials?</h3>
+    <p>Retrieval practice and spacing are the only two techniques rated "high utility" in the canonical review of learning techniques, and mastery gates raise outcomes roughly half a standard deviation across 108 controlled studies. The <a href="https://github.com/Tatendaz/langchain-fde-curriculum#readme">README</a> cites the papers if you want them.</p>
+    <h3>What do I finish with?</h3>
+    <p>A deployed, evaluated, monitored capstone agent, plus a case study and a demo video — a portfolio that answers the question every FDE interview and client call comes down to: <b>"How do you know it works?"</b></p>
+    <h3>Is it free and can I reuse it?</h3>
+    <p>Yes. Code is MIT and the written curriculum is CC BY 4.0 — see the <a href="https://github.com/Tatendaz/langchain-fde-curriculum/blob/main/LICENSE">LICENSE</a>.</p>
+  </section>
+
+  <footer>
+    MIT + CC BY 4.0 © <a href="https://github.com/Tatendaz">Tatendaz</a> ·
+    <a href="https://github.com/Tatendaz/langchain-fde-curriculum">Source</a> ·
+    <a href="https://tatendaz.github.io/">More work</a>
+  </footer>
+</div>
+</body>
+</html>
