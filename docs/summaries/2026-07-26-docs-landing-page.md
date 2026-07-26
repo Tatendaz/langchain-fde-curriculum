@@ -30,8 +30,16 @@
   tools; this one describes a curriculum, so `Course` (with `isAccessibleForFree`, a
   `provider`, and a `PT65H` workload) is the type search engines actually have handling
   for. `FAQPage` is kept in common with the others.
-- **Wrote the FAQ answers to match the visible copy verbatim.** Structured data that
-  disagrees with what's on the page is a manual-action risk, not a ranking trick.
+- **Made the FAQ structured data mirror the rendered FAQ exactly.** The first draft didn't:
+  the JSON-LD declared five questions ("What is the LangChain FDE curriculum?", "Who is
+  this curriculum for?") that appeared nowhere as FAQ entries on the page. The local
+  CodeRabbit review flagged it as a major finding and it was fixed before pushing —
+  structured data that disagrees with the visible page is a manual-action risk, not a
+  ranking trick. A check that parses each `ld+json` block and diffs the declared questions
+  against the rendered `<h3>`s now backs this.
+- **Gave the accent colour a paired `--on-accent` foreground.** White label text on the
+  dark-theme accent measured about 2.8:1, under the 4.5:1 WCAG AA bar for button text.
+  Dark-on-accent brings it to roughly 7:1. Also flagged by CodeRabbit.
 - **Left `og:image` out.** The other two pages ship a `social-preview.png`; this repo has
   none, and generating one wasn't part of the ask. Noted as a follow-up instead of
   pointing the tag at a file that doesn't exist.

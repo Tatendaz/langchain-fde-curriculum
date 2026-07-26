@@ -47,28 +47,28 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "What is the LangChain FDE curriculum?",
-      "acceptedAnswer": { "@type": "Answer", "text": "A free, self-paced curriculum in seven phases that takes an engineer who already uses LLMs to the point of designing, evaluating, and deploying stateful agents in production on the LangChain, LangGraph and LangSmith stack. Every phase ends in a standalone shipped artifact and a mastery gate you have to pass before moving on." }
+      "name": "What does it cost to run?",
+      "acceptedAnswer": { "@type": "Answer", "text": "About $0 on the default path. Models run on local Ollama — if your machine is weak, a hosted provider works with a one-line .env change for a few dollars. LangSmith's free Developer tier covers the tracing, datasets and evaluations. Phase 5's DIY path runs on a local kind/minikube cluster, so no cloud bill; the managed path needs a paid plan and is presented as the client-engagement option, not a learning requirement." }
     },
     {
       "@type": "Question",
-      "name": "How long does it take and what does it cost?",
-      "acceptedAnswer": { "@type": "Answer", "text": "About 60 to 70 focused hours — roughly 8 weeks at 8 to 9 hours a week, with a hard cap of two months. It costs about $0 on the default path: models run on local Ollama and LangSmith's free Developer tier covers the tracing, datasets and evaluations. Only Phase 5's optional managed-deployment path needs a paid plan." }
+      "name": "What's a mastery gate, exactly?",
+      "acceptedAnswer": { "@type": "Answer", "text": "A build check (definition-of-done as checkboxes), a closed-book concept check with answers hidden behind collapsible blocks, and an FDE scenario. Write your answer down before peeking — generating the answer first is retrieval practice, the single best-supported technique in the learning literature, and it only works if you don't read ahead." }
     },
     {
       "@type": "Question",
-      "name": "What is a mastery gate?",
-      "acceptedAnswer": { "@type": "Answer", "text": "You do not advance by finishing the code — you advance by passing a gate at the end of each phase: a build checklist, a closed-book concept check with hidden answer keys, and an 'explain it to a client' scenario. The pass rule is every build box ticked, at most one concept miss, and a scenario answer you would say to a client with a straight face. Gates in phases 4 to 6 also re-ask earlier material, because spaced re-testing is deliberate." }
+      "name": "Why gates instead of just more tutorials?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Retrieval practice and spacing are the only two techniques rated \"high utility\" in the canonical review of learning techniques, and mastery gates raise outcomes roughly half a standard deviation across 108 controlled studies. The README cites the papers if you want them." }
     },
     {
       "@type": "Question",
-      "name": "Who is this curriculum for?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Engineers comfortable in Python who use LLMs daily but have not yet architected and deployed a stateful agent to production — especially infrastructure, SRE and backend engineers, whose remaining gaps are narrower: agent application architecture, the LangChain APIs, and LLM-specific evaluation. It also targets aspiring or interviewing forward-deployed, applied-AI and solutions engineers. It is not for people who have never written Python, or who want ML research and model training." }
+      "name": "What do I finish with?",
+      "acceptedAnswer": { "@type": "Answer", "text": "A deployed, evaluated, monitored capstone agent, plus a case study and a demo video — a portfolio that answers the question every FDE interview and client call comes down to: \"How do you know it works?\"" }
     },
     {
       "@type": "Question",
-      "name": "What do you finish with?",
-      "acceptedAnswer": { "@type": "Answer", "text": "A deployed, evaluated, monitored capstone agent, plus a case study and a demo video — a portfolio that answers the question every FDE interview and client call comes down to: how do you know it works?" }
+      "name": "Is it free and can I reuse it?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Code is MIT and the written curriculum is CC BY 4.0 — see the LICENSE." }
     }
   ]
 }
@@ -78,11 +78,15 @@
   :root {
     --bg: #0d0f12; --panel: #16191e; --border: rgba(255,255,255,0.11);
     --text: #f2efe9; --muted: #9a948a; --accent: #3aa981; --green: #4cc38a;
+    /* The dark accent is light enough that white label text lands around 2.8:1.
+       Dark-on-accent gets it to ~7:1 and keeps the button legible. */
+    --on-accent: #06140f;
   }
   @media (prefers-color-scheme: light) {
     :root {
       --bg: #faf7f2; --panel: #ffffff; --border: rgba(0,0,0,0.12);
       --text: #1c1a17; --muted: #6b665e; --accent: #1f7a54; --green: #1f8a56;
+      --on-accent: #ffffff;
     }
   }
   body {
@@ -100,7 +104,7 @@
     display: inline-block; padding: 12px 22px; border-radius: 10px; font-weight: 700;
     text-decoration: none; font-size: 16px;
   }
-  .btn.primary { background: var(--accent); color: #fff; }
+  .btn.primary { background: var(--accent); color: var(--on-accent); }
   .btn.ghost { border: 1px solid var(--border); color: var(--text); }
   .stats { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 26px; }
   .stat {
