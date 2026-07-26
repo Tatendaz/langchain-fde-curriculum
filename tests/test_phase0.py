@@ -4,6 +4,9 @@ These cover the pure logic only — no API key or network required — so they r
 fast and in CI. The LLM call itself is verified by eye via the LangSmith trace.
 """
 
+import pytest
+from pydantic import ValidationError
+
 from phase0.hello_agent import Analysis, word_count
 
 
@@ -23,3 +26,10 @@ def test_analysis_schema_validates():
     analysis = Analysis(word_count=9, summary="The sentence has nine words.")
     assert analysis.word_count == 9
     assert analysis.summary == "The sentence has nine words."
+
+
+def test_analysis_schema_rejects_a_non_numeric_word_count():
+    # This is the whole point of structured output: a model that answers "nine"
+    # instead of 9 must fail loudly here rather than downstream.
+    with pytest.raises(ValidationError):
+        Analysis(word_count="nine", summary="The sentence has nine words.")

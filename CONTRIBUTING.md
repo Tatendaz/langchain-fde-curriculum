@@ -18,7 +18,7 @@ Thanks for improving the curriculum. Ground rules keep it teachable:
 
 ## How
 
-1. Fork, branch, make the change.
+1. Fork, branch (see **Branch naming** below), make the change.
 2. `uv run pytest` must stay green; if you touch phase 0–3 code, keep the
    pure logic unit-testable offline (no network in tests).
 3. Keep each phase README self-contained *as a document* — someone should be
@@ -26,28 +26,108 @@ Thanks for improving the curriculum. Ground rules keep it teachable:
    *code* does build up: `phase2/agent.py` imports Phase 1's tools, and phases
    4–6 work against your Phase 3 agent. That's fine; the prose is what has to
    stand alone.)
-4. **Add the two docs entries the PR gate requires** — see below.
-5. Open a PR describing *what a learner gains* from the change.
+4. Add the two docs entries (see **Required docs entries**) and open a PR
+   describing *what a learner gains* from the change.
 
-## The PR gate
+## Setting up
 
-`.github/workflows/pr-gate.yml` runs on every PR into `main` and has three
-jobs. The first one catches people by surprise, so: **a PR with no
-`docs/features/` and `docs/summaries/` entry is hard-failed**, whatever else
-is in it.
+You do **not** need Ollama, an OpenAI/Anthropic key, or a LangSmith key to
+contribute. `.env.example` describes what you need to *run* a phase, not what
+you need to *change* one — the test suite is entirely offline and finishes in
+well under a second.
 
-| Job | What it does | How to satisfy it |
-|---|---|---|
-| Docs gate | Requires `docs/features/*<slug>.md` **and** `docs/summaries/*<slug>.md` | Add both, named `<YYYY-MM-DD>-<slug>.md` |
-| Tests | `uv sync --frozen` then `uv run pytest -q` | Keep the suite green; re-run `uv lock` if you touch `pyproject.toml` |
-| New code has new tests | Fails if source files changed and no test file did | Add or update a test under `tests/` |
+Install [`uv`](https://docs.astral.sh/uv/), then from the repo root:
 
-The **slug** is your branch name with a leading `feat/`, `fix/`, `chore/`,
-`docs/` or `refactor/` stripped and remaining `/` turned into `-`. So branch
-`docs/readme-slim` → slug `readme-slim` → `docs/features/2026-07-25-readme-slim.md`.
-Copy the shape of the entries already in those folders: the feature file says
-what changed and why, the summary file records the prompts, steps and
-decisions.
+```bash
+uv sync            # create the venv + install dependencies (pytest included)
+uv run pytest      # the offline suite — no network, no keys, no model
+uvx ruff check .   # the same lint CI runs
+```
+
+Python 3.11 or newer (`requires-python = ">=3.11"`). `.python-version` pins
+3.12 for local work, but CI runs the suite on **3.11, 3.12, 3.13 and 3.14** —
+a change that only works on your interpreter will fail there.
+
+If you change a dependency in `pyproject.toml`, commit the refreshed `uv.lock`
+alongside it. CI installs with `uv sync --locked` and fails on a stale lock.
+
+## Branch naming
+
+Name the branch `<type>/<slug>` — `feat`, `feature`, `fix`, `chore`, `docs` or
+`refactor`. This is load-bearing, not style: CI strips the `<type>/` prefix,
+turns any remaining `/` into `-`, and then looks for docs files carrying that
+slug. So `fix/typo-phase1` → slug `typo-phase1`.
+
+> Editing a file through GitHub's web UI creates a branch called `patch-1`.
+> That fails the docs gate. Create a properly-named branch instead.
+
+## Required docs entries
+
+Every PR adds **two** files, both named `<YYYY-MM-DD>-<slug>.md`. On branch
+`fix/typo-phase1`, opened on 25 July 2026, they are exactly:
+
+```text
+docs/features/2026-07-25-typo-phase1.md    # what changed and why
+docs/summaries/2026-07-25-typo-phase1.md   # the prompts and steps that produced it
+```
+
+The date prefix is the day you open the PR; the slug has to match the branch.
+Copy the shape from
+[`docs/features/2026-07-05-mastery-gates-2026-refresh.md`](docs/features/2026-07-05-mastery-gates-2026-refresh.md)
+and its matching summary. This gate is the most common reason a first-time PR
+goes red, so it is worth getting right before you push.
+
+## Does my change need a test?
+
+Yes, by default: **CI fails any PR that changes a `.py` file without changing
+a test file.** New behaviour in a worked example is behaviour a learner will
+copy, so it gets a test — `tests/` is the reference for what "offline" means
+in practice.
+
+The exception is the kind of fix this page asks for at the top: an outdated
+API name, a broken command in a docstring, a comment that lies. There is
+nothing to assert. Say so in the PR description and a maintainer will apply the
+**`skip-coverage-gate`** label, which stands the gate down for that PR. Only a
+maintainer can apply it and it stays visible on the PR, so the decision is on
+the record rather than hidden in a CI setting.
+
+Markdown-only PRs — sharper gate questions, FDE scenarios, a
+`phase6/completions.md` row — never trip this gate at all.
+
+## Checks that must pass
+
+Merging to `main` requires a pull request with every check below green, all
+review conversations resolved, and one approving review from the code owner
+(@Tatendaz). These are enforced by the `protect-main` branch ruleset, which is
+active — GitHub blocks the merge button, so there is nothing to remember here.
+The required checks:
+
+| Check | What it runs |
+|---|---|
+| `Tests (py3.11)` … `Tests (py3.14)` | `uv sync --locked` then `pytest`, one leg per Python version |
+| `Lint (ruff)` | `ruff check .` |
+| `Docs gate (features + summaries)` | the two files above exist and match the branch |
+| `New code has new tests` | a `.py` change comes with a test change |
+
+Plus **one approving review from a code owner** (@Tatendaz). You cannot approve
+your own pull request — GitHub does not allow it — so every contribution gets a
+second pair of eyes before it lands.
+
+If this is your first PR here, your workflow runs sit **pending approval** until
+a maintainer clicks "Approve and run". That is GitHub's fork policy, not broken
+CI.
+
+## Never in a PR
+
+Secrets, API keys, `.env`. `.gitignore` already covers `.env` and `.env.*`
+(keeping `.env.example`) — don't defeat it with `git add -f`.
+
+And the standing rule for tests: **never add a test that needs a key or the
+network.** Stub the transport instead; `tests/test_phase1.py` does exactly that
+for `fetch_url`, the one tool in the curriculum that makes a real HTTP call. If
+a change genuinely needs a live model, mark the test `@pytest.mark.live` — it is
+registered in `pyproject.toml`, excluded from PR CI (fork PRs never receive
+secrets anyway), and runs only in the manually-dispatched `Live smoke` job.
 
 ## Questions
 

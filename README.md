@@ -179,7 +179,7 @@ uv sync                              # create the venv + install the lockfile
 cp .env.example .env                 # then fill it in — see just below
 
 uv run python -m phase0.hello_agent  # run the Phase 0 starter
-uv run pytest                        # 14 offline tests — no model, no network
+uv run pytest                        # 37 offline tests — no model, no network
 ```
 
 `.env.example` is annotated and lists every variable. Three of them bite:
@@ -200,8 +200,10 @@ one-line switch.
   calling, or is too small to use it reliably. Try `llama3.1`, `qwen2.5`, or a
   Cloud model like `gpt-oss:20b`.
 - **Phase 3 fails on embeddings.** `ollama pull nomic-embed-text`.
-- **`uv sync --frozen` fails** (that's what CI runs). `uv.lock` is stale
+- **`uv sync --locked` fails** (that's what CI runs). `uv.lock` is stale
   relative to `pyproject.toml`: run plain `uv sync`, commit the lockfile.
+  CI deliberately uses `--locked` rather than `--frozen` so a stale lock fails
+  loudly instead of installing quietly.
 
 Then open [`phase0/README.md`](phase0/README.md) and start the loop:
 **run → modify → ship → gate.**

@@ -33,3 +33,10 @@ package = false
 [tool.pytest.ini_options]
 # Put the repo root on sys.path so tests can `import phase0` etc.
 pythonpath = ["."]
+# The whole suite is offline by rule. If a phase 4 eval ever genuinely needs a
+# live model or an API key, mark it `@pytest.mark.live`: PR CI never runs those
+# (secrets aren't available to fork PRs anyway), only the manually-dispatched
+# `live-smoke` job does.
+markers = [
+    "live: needs a live model or API key; excluded from PR CI",
+]

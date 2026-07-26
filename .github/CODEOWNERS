@@ -1,0 +1,7 @@
+# Every change to this repository requires review from the code owner.
+# Paired with the `protect-main` ruleset (require_code_owner_review: true),
+# this is what makes a contributor's PR need an explicit approval from
+# @Tatendaz before it can be merged. A contributor cannot approve their
+# own PR — GitHub forbids it — so this cannot be self-satisfied.
+
+* @Tatendaz

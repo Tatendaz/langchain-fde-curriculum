@@ -1,0 +1,158 @@
+name: CI
+
+# The test + lint pipeline. Policy checks (docs entries, "new code has new
+# tests") live in pr-gate.yml; the two files must not both run the suite.
+#
+# Design constraints this file respects:
+#   * `pyproject.toml` sets `requires-python = ">=3.11"` -> matrix 3.11..3.14.
+#   * `[tool.uv] package = false` -> `uv sync` installs deps only, never builds.
+#   * `[dependency-groups] dev` is installed by `uv sync` BY DEFAULT, so
+#     `--all-extras --dev` is redundant (there are no optional-dependencies at
+#     all). Verified: plain `uv sync --locked` -> 60 pkgs incl. pytest;
+#     `--no-default-groups` -> 56 pkgs, no pytest.
+#   * The whole suite is pure/offline. No job here consumes a secret, so fork
+#     PRs run green. The only secret-consuming job (`live-smoke`) is
+#     manual-dispatch-only and can never be triggered by a pull request.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege. The repo currently defaults to read-only workflow tokens,
+# but that is a repo setting that can be flipped; declare it in the file.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Cancel superseded PR runs; never cancel a run on main.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # Pin the uv version so a bad uv release cannot break every PR at once.
+  UV_VERSION: "0.11.21"
+
+jobs:
+  test:
+    name: Tests (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        # Matches requires-python = ">=3.11". Locally verified: green on
+        # 3.11.15 / 3.12.13 / 3.13.14 / 3.14.5.
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          # Sets UV_PYTHON; uv provisions the interpreter itself, so no
+          # actions/setup-python step is needed.
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+          cache-suffix: py${{ matrix.python-version }}
+
+      # `--locked` (not `--frozen`): fails loudly if pyproject.toml was edited
+      # without refreshing uv.lock. `--frozen` would silently install a stale
+      # lock. Verified `uv sync --locked` succeeds against the committed lock.
+      - name: Install locked dependencies
+        run: uv sync --locked
+
+      - name: Run offline test suite
+        env:
+          # The suite must never need a model, a key, or the network. Point the
+          # Ollama base URL at a dead port and disable tracing so that any test
+          # that quietly starts phoning home fails here instead of in review.
+          OLLAMA_BASE_URL: http://127.0.0.1:1
+          LANGSMITH_TRACING: "false"
+          LANGCHAIN_TRACING_V2: "false"
+        run: uv run --no-sync pytest -q
+
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      # ruff is NOT a project dependency and does not need to be: `uvx` runs a
+      # pinned copy. Verified locally -> "All checks passed!" on the default
+      # rule set, so this job is green from day one with zero code changes.
+      - name: ruff check
+        run: uvx ruff@0.14.5 check --output-format=github .
+
+      # `ruff format --check` is deliberately NOT enabled yet: it currently
+      # wants to reformat phase0/hello_agent.py, phase1/agent.py,
+      # phase2/agent.py and phase3/agent.py (~108 diff lines, all line-length).
+      # Land a one-time `ruff format` commit + `[tool.ruff] line-length` first,
+      # then add the step here.
+
+  live-smoke:
+    name: Live smoke (manual, needs secrets)
+    # NEVER runs on pull_request. Repository secrets are not exposed to
+    # workflows triggered by fork PRs, so a secret-consuming job on that
+    # trigger fails for every outside contributor. Manual dispatch only.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # To gate the secrets behind a deployment approval, create a `live-smoke`
+    # environment in repo settings, add OLLAMA_BASE_URL / OLLAMA_API_KEY /
+    # LANGSMITH_API_KEY to it, and uncomment the next line.
+    # environment: live-smoke
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: "3.12" # matches .python-version
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install locked dependencies
+        run: uv sync --locked
+
+      - name: Run tests marked `live`
+        env:
+          OLLAMA_BASE_URL: ${{ secrets.OLLAMA_BASE_URL }}
+          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          LANGSMITH_TRACING: "true"
+          LANGSMITH_PROJECT: langchain-fde-curriculum-ci
+          MODEL: llama3.1
+        run: |
+          status=0
+          uv run --no-sync pytest -q -m live || status=$?
+          # pytest exit code 5 == "no tests collected". Expected until the
+          # phase 4 eval suite introduces `@pytest.mark.live` tests. Verified
+          # locally: `pytest -q -m live` currently exits 5 (all deselected).
+          if [ "$status" -eq 5 ]; then
+            echo "No tests marked 'live' yet — nothing to run."
+            exit 0
+          fi
+          exit "$status"
