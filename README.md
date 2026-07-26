@@ -44,8 +44,8 @@ different from the many agent tutorials out there:
    scenario. Across the seven gates that's **32 closed-book concept questions
    and 6 client-facing FDE scenarios — 38 hidden answer keys in all**, with
    later gates deliberately re-asking earlier phases (Phase 4 returns to 2 and
-   3; Phase 5 to 0, 1 and 4; Phase 6 asks one per phase). Almost no
-   popular free curriculum gates progression on demonstrated understanding,
+   3; Phase 5 to 0, 1 and 4; Phase 6 asks one per phase). Few
+   popular free curricula gate progression on demonstrated understanding,
    and the [learning-science evidence](docs/evidence.md) says it's one of the
    highest-leverage things a curriculum can do.
 2. **Evaluation as the spine, not a module.** The most-asked question in FDE
@@ -71,8 +71,8 @@ different from the many agent tutorials out there:
   LangGraph / LangSmith APIs, and LLM-specific evaluation — and this plan
   leans into exactly those.
 - **Aspiring or interviewing FDEs** (forward-deployed / applied AI /
-  solutions engineers). Phase 6's drills mirror the actual interview loops at
-  LangChain, OpenAI, and Anthropic: a build-for-a-fictional-customer
+  solutions engineers). Phase 6's drills mirror the rounds applied-AI
+  interview loops reportedly run: a build-for-a-fictional-customer
   take-home, a discovery-call simulation, and a non-technical presentation.
 
 **Not for you if:** you've never written Python (start with a Python course
@@ -302,8 +302,8 @@ answered. Be honest; nobody's grading you but the next client.
 ## Using or sharing this curriculum
 
 - **Fork it and work through it** — the checklist above becomes your tracker.
-  Working with a friend or posting weekly progress publicly measurably
-  improves follow-through; treat it as part of the method.
+  Working with a friend or posting weekly progress publicly tends to
+  improve follow-through; treat it as part of the method.
 - **Teach with it** — run it as a study group or internal cohort; each phase
   README is self-contained as a document, so you can hand out one at a time.
   Attribution appreciated.
@@ -311,7 +311,7 @@ answered. Be honest; nobody's grading you but the next client.
   welcome; see [CONTRIBUTING.md](CONTRIBUTING.md), including the PR gate's
   `docs/features/` + `docs/summaries/` requirement. Finished the capstone? Add
   a link to yours in [`phase6/completions.md`](phase6/completions.md).
-- **License:** [MIT](LICENSE) — which by its own wording covers "the Software
+- **License:** [MIT](LICENSE) — which by its own wording covers "this software
   and associated documentation files," so the code *and* the prose. Reuse
   freely; keep the copyright notice.
 

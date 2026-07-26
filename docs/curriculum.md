@@ -146,7 +146,7 @@ we'll know if it regresses."*
 ├── phase4/            # build guide: evals, CI gate, monitoring
 ├── phase5/            # build guide: guardrails, reliability, deployment
 ├── phase6/            # build guide: capstone brief + FDE drills
-├── tests/             # 14 offline unit tests for the pure logic in phases 0–3
+├── tests/             # 37 offline unit tests for the pure logic in phases 0–3
 ├── docs/              # this docs set, plus features/ and summaries/ (PR gate)
 ├── .github/workflows/ # PR gate: docs entries + tests + new-code-has-tests
 ├── CONTRIBUTING.md    # fixes, questions, and sharing your solutions

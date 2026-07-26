@@ -8,7 +8,7 @@ non-coding skills that actually decide interviews and deals.
 Budget ~2 weeks: one for the build (you're assembling phases 2–5, not
 inventing), one for the deliverables and drills. **The FDE drills are not
 optional garnish** — by reported account of 2025–26 applied-AI loops, the
-rounds that trip up candidates who cleared the coding screens are exactly the
+rounds that trip up candidates who cleared the coding screens are among the
 ones drilled here: discovery, decomposition, and presenting to non-technical
 people. (Reported experience, not a published study — see the README's
 [sourcing note](../README.md#the-fde-layer--what-the-market-actually-tests).)

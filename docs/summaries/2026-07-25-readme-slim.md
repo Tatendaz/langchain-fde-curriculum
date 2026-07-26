@@ -90,3 +90,17 @@ checked; the only non-200s are four academic publishers that 403 automated
 clients and one host that rate-limited, all pre-existing links.
 
 Nothing pushed; no PR opened.
+
+## Post-merge re-verification (2026-07-26)
+
+After `main` was merged in twice (PR #4 expanded the test suite from 14 to 37
+and switched CI to `uv sync --locked`; PR #5 added `docs/index.html`), an
+independent review re-ran the checks on the merged branch: `uv run pytest` →
+**37 passed**; `uv sync --locked` clean; 54/54 relative links and anchors
+across 21 markdown files resolve. The same pass reconciled the merge leftovers
+— `docs/curriculum.md`'s "14 offline unit tests" comment, `docs/index.html`'s
+"MIT + CC BY 4.0" / "every phase folder ships code" / "gate between each one"
+claims and stale doc-domain links — and finished the softening CodeRabbit
+asked for (three of its five flagged phrasings were still present), including
+the "Who this is for" claim naming LangChain/OpenAI/Anthropic loops as fact
+and the misquoted MIT phrase in README and CONTRIBUTING.

@@ -137,5 +137,5 @@ regularly graduate into the READMEs.
 ## License of contributions
 
 Contributions land under the repo's [MIT license](LICENSE), which by its own
-wording covers "the Software and associated documentation files" — the code
+wording covers "this software and associated documentation files" — the code
 *and* the prose.

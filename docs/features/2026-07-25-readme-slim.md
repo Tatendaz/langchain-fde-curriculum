@@ -60,9 +60,10 @@ through got the same content twice; a maintainer got two places to update.
   line in `docs/features/2026-07-05-...` and `docs/summaries/2026-07-05-...`,
   which recorded an intent the LICENSE file never carried.)*
 - **Deleted the hardcoded `progress-3/7 phases` badge.** The curriculum is 7/7:
-  worked code for phases 0–3, a 14-test suite, and 264/239/289-line build
-  guides for 4/5/6. The badge read as "43% written" and pre-ticked three
-  phases in every fork.
+  worked code for phases 0–3, a 37-test suite (14 at the time of the original
+  cut; PR #4's CI hardening expanded it), and 264/239/291-line build guides
+  for 4/5/6. The badge read as "43% written" and pre-ticked three phases in
+  every fork.
 - **"Each phase folder ships working, commented code"** → phases 0–3 ship code,
   4–6 are build guides. The README used to contradict itself 104 lines later.
 - **"Every phase folder stands alone"** → "each phase README is self-contained
@@ -120,11 +121,38 @@ files — a contributor following the four numbered steps got a red X.
 
 ## Verification
 
-- `uv run pytest` — **14 passed**, Python 3.12.13, pytest 9.1.0.
-- `uv sync --frozen` clean after the re-lock (this is what CI runs).
-- All 53 relative links and heading anchors across 15 markdown files resolve.
+- `uv run pytest` — **14 passed** at the original cut (Python 3.12.13, pytest
+  9.1.0); **37 passed** re-run 2026-07-26 after the merges from `main`
+  brought in PR #4's expanded suite.
+- `uv sync --locked` clean after the re-lock (this is what CI runs; the
+  original session used `--frozen`, before PR #4 switched CI to `--locked`).
+- All relative links and heading anchors resolve — 53 across 15 markdown
+  files at the original cut; 54 across 21 files re-checked 2026-07-26.
 - All 33 external URLs return 200 except four academic publishers (SAGE ×3,
   Wiley) that 403 automated clients, and nabeelqu.co which rate-limited the
   check. All pre-existing links, all fine in a browser.
 - `git grep "README.md#progress-checklist"` still returns the same six phase
   READMEs, all resolving.
+
+## Review follow-up (2026-07-26)
+
+An independent review pass over the merged branch fixed what the two merges
+from `main` had left inconsistent, and closed out the review feedback fully:
+
+- `docs/curriculum.md` repo layout said "14 offline unit tests"; the suite is
+  37. Now 37.
+- `docs/index.html` (merged in from PR #5) still claimed "MIT + CC BY 4.0"
+  in three places, "Each phase folder ships working, commented code", "a
+  mastery gate between each one", and the old `python.langchain.com` /
+  `langchain-ai.github.io/langgraph/` doc links — all now aligned with this
+  PR's corrections (MIT-only, 0–3 code / 4–6 build guides, "for each one",
+  `docs.langchain.com`).
+- Three of the five evidence-scope phrasings CodeRabbit flagged were still
+  present ("Almost no popular free curriculum", "measurably improves",
+  "exactly the ones drilled here"); all three are now softened.
+- README's "Who this is for" still asserted "the actual interview loops at
+  LangChain, OpenAI, and Anthropic" as fact — the one named-company claim the
+  sourcing pass missed. Softened to reported experience.
+- README and CONTRIBUTING quoted MIT as covering "the Software and associated
+  documentation files"; the license's actual words are "this software and
+  associated documentation files". Quotes now exact.
