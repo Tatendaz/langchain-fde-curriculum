@@ -36,6 +36,8 @@ defaults:
 
 jobs:
   docs-gate:
+    # Dependabot bumps never carry docs entries; the docs gate is for human/agent PRs.
+    if: github.actor != 'dependabot[bot]'
     name: Docs gate (features + summaries)
     runs-on: ubuntu-latest
     timeout-minutes: 5
