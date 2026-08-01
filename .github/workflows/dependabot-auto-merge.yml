@@ -1,0 +1,88 @@
+name: Dependabot auto-merge
+
+# Auto-merge Dependabot PRs (ported from Tatendaz/Quant_Backtest_Platform,
+# hardened 2026-08-01). Patch + minor bumps are approved and merged
+# automatically; major bumps can carry breaking changes that green CI may not
+# catch, so they wait for a human. On repos with required status checks,
+# GitHub auto-merge waits for them; on repos whose checks are not marked
+# required, the fallback below still waits for every sibling check to finish
+# and refuses to merge if any failed.
+on:
+  pull_request:
+    branches: [main, master]
+
+# Dependabot-triggered runs get a read-only token by default; raise it so the
+# job can approve and enable auto-merge on the PR. (Dependabot PR branches live
+# in this repo, so this elevation is allowed — see GitHub's "Automating
+# Dependabot" docs.)
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+# One run per PR; a new push supersedes the old run (whose merge would be
+# rejected anyway by --match-head-commit below).
+concurrency:
+  group: dependabot-automerge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  auto-merge:
+    name: Dependabot auto-merge
+    # Bind to the PR author, not github.actor — the author can't be spoofed by
+    # a later pusher, which is the hardened check GitHub recommends for
+    # Dependabot.
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Fetch Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      # Approval first: satisfies branch protections that require one review.
+      # Needs "Allow GitHub Actions to create and approve pull requests" in the
+      # repo's Actions settings; continue-on-error keeps repos without that
+      # setting (and without a review requirement) working.
+      - name: Approve (patch + minor)
+        if: steps.meta.outputs.update-type == 'version-update:semver-patch' || steps.meta.outputs.update-type == 'version-update:semver-minor'
+        continue-on-error: true
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Only patch + minor bumps merge unattended. --match-head-commit pins the
+      # merge to the commit this run classified — a later push can't ride in
+      # under this run's patch/minor verdict (its own synchronize run
+      # re-evaluates it). --auto waits for required checks; when the repo has
+      # no protection rules to arm against, GitHub rejects --auto, so wait for
+      # every *other* check on this commit (this job excluded) and merge only
+      # if none failed.
+      - name: Merge (patch + minor)
+        if: steps.meta.outputs.update-type == 'version-update:semver-patch' || steps.meta.outputs.update-type == 'version-update:semver-minor'
+        run: |
+          if gh pr merge --auto --squash --match-head-commit "$HEAD_SHA" "$PR_URL"; then
+            exit 0
+          fi
+          echo "Auto-merge could not be enabled (no pending requirements); waiting on sibling checks."
+          sleep 20  # let sibling workflows register their check runs
+          for i in $(seq 1 60); do
+            pending=$(gh api "repos/$REPO/commits/$HEAD_SHA/check-runs?per_page=100" \
+              --jq '[.check_runs[] | select(.name != "Dependabot auto-merge") | select(.status != "completed")] | length')
+            [ "$pending" = "0" ] && break
+            echo "Waiting on $pending check(s)..."
+            sleep 30
+          done
+          failed=$(gh api "repos/$REPO/commits/$HEAD_SHA/check-runs?per_page=100" \
+            --jq '[.check_runs[] | select(.name != "Dependabot auto-merge") | select(.conclusion != null and .conclusion != "success" and .conclusion != "neutral" and .conclusion != "skipped")] | length')
+          if [ "$failed" != "0" ]; then
+            echo "::error::$failed sibling check(s) did not pass — leaving the PR for a human."
+            exit 1
+          fi
+          gh pr merge --squash --match-head-commit "$HEAD_SHA" "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
