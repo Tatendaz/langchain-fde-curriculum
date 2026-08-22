@@ -54,7 +54,7 @@ The non-negotiable spine is **1 → 2 → 4 → 5 → capstone**: build an agent
 
 ## Getting started
 
-```
+```sh
 # install uv + Ollama first, then from the repo root
 ollama pull llama3.1                 # any tool-calling model works
 uv sync                              # create the venv + install dependencies
