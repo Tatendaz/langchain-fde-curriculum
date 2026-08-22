@@ -53,6 +53,9 @@ def test_h1_and_content_live_inside_main():
     assert len(re.findall(r"<h1\b", HTML, re.I)) == 1, "exactly one <h1>"
     assert len(re.findall(r"<h1\b", main, re.I)) == 1, "the <h1> must be inside <main>"
     assert len(block_text(main)) >= 500, "500+ chars of text inside <main>"
+    # Boilerplate-stripping extractors drop <header>/<nav>/<aside>/<footer> before counting.
+    for tag in ("<header", "<nav", "<aside", "<footer"):
+        assert tag not in main.lower(), f"{tag} inside <main> would hide content from agents"
 
 
 def test_head_advertises_markdown_twin_and_llms_txt():
