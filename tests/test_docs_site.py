@@ -3,6 +3,10 @@
 AI crawlers read the text inside <main>, the JSON-LD, and the Markdown twin that
 <link rel="alternate" type="text/markdown"> points at. These tests keep those in
 step with the HTML without touching the network.
+
+The custom 404 page (docs/404.html) gets the same treatment: GitHub Pages serves it
+for every missing path under the project, so it must stay a real noindex 404 that
+hands agents short Markdown pointers and whose links work at any URL depth.
 """
 
 import html
@@ -13,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SLUG = "langchain-fde-curriculum"
 HTML = (ROOT / "docs" / "index.html").read_text(encoding="utf-8")
 MD = (ROOT / "docs" / "index.md").read_text(encoding="utf-8")
+NOT_FOUND = (ROOT / "docs" / "404.html").read_text(encoding="utf-8")
 
 
 def section(tag: str, doc: str = HTML) -> str:
@@ -83,3 +88,37 @@ def test_markdown_twin_carries_every_paragraph():
     plain = twin_plain(MD)
     for block in blocks:
         assert block in plain, f"twin is missing the text: {block[:80]!r}"
+
+
+def test_404_page_is_a_noindex_dead_end_with_markdown_pointers():
+    assert "404" in block_text(section("title", NOT_FOUND))
+    assert '<meta name="robots" content="noindex">' in section("head", NOT_FOUND)
+    # A 404 is not a document: nothing to canonicalise and no Markdown twin to advertise.
+    assert not re.search(r'<link\b[^>]*\brel="(?:canonical|alternate)"', NOT_FOUND, re.I)
+
+    main = section("main", NOT_FOUND)
+    assert block_text(section("h1", NOT_FOUND)) == "Page not found"
+    assert re.findall(r"<(header|nav|aside|footer)\b", main, re.I) == []
+    assert len(block_text(main)) < 1500, "keep the 404 short"
+
+    blocks = re.findall(r'<pre class="md"[^>]*>(.*?)</pre>', main, re.S)
+    assert len(blocks) == 1, 'exactly one <pre class="md"> inside <main>'
+    md = html.unescape(blocks[0]).strip()
+    assert md.startswith("# 404")
+    assert "## Where to look next" in md
+    assert "- [Site map](https://tatendaz.github.io/sitemap.xml)" in md
+    assert "- [llms.txt](https://tatendaz.github.io/llms.txt)" in md
+    assert f"https://tatendaz.github.io/{SLUG}/" in md
+    assert len(md) < 700, "the Markdown pointers must stay short"
+    assert not re.search(r"<[a-z]+[\s>]", md), "the Markdown block must be plain text, no HTML"
+
+
+def test_404_page_urls_work_at_any_depth():
+    # GitHub Pages serves 404.html for every missing path, however deep
+    # (/langchain-fde-curriculum/a/b/c), so a relative URL would resolve against the
+    # wrong directory. Every URL must be absolute; the favicon is a data: URI, which
+    # has no path to resolve.
+    urls = re.findall(r'\b(?:href|src)="([^"]*)"', NOT_FOUND)
+    assert urls, "the 404 page must link somewhere"
+    for url in urls:
+        assert url.startswith((f"/{SLUG}/", "http://", "https://", "mailto:", "#", "data:")), url
