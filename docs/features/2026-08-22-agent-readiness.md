@@ -24,7 +24,8 @@ this page; the page now points back at it and ships the Markdown twin that the
   outside). The hero was a `<header>`; it is now `<div class="hero">` (CSS selector renamed,
   same rules) because boilerplate-stripping extractors drop `<header>` elements and would
   lose the H1 with it. The two `<link>` tags sit after the canonical; the footer gains an llms.txt link.
-  No CSS change, no layout change (the stylesheet has no child selectors or `main` rules).
+  CSS: selector-only change (the one `header` rule is now `.hero`, same declarations); no layout
+  change (the stylesheet has no child selectors or `main` rules).
 - `docs/index.md`: Markdown twin of the page content, generated from the HTML and then
   hand-checked (the three stat tiles became a list). It ends with links back to the HTML version, the
   source, the root site and `llms.txt`.
