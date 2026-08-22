@@ -73,10 +73,11 @@ def test_head_advertises_markdown_twin_and_llms_txt():
 def test_markdown_twin_mirrors_the_page():
     assert MD.startswith("# "), "twin must start with an H1"
     assert MD.splitlines()[0][2:].strip() == block_text(section("h1"))
+    # Whole lines, so "### Heading" (which contains "## Heading") does not count as an H2.
     md_h2s = [line[3:].strip() for line in MD.splitlines() if line.startswith("## ")]
-    for h2 in re.findall(r"<h2\b[^>]*>(.*?)</h2>", HTML, re.S | re.I):
-        # Whole-line match: "### Heading" contains "## Heading" but is not an H2.
-        assert block_text(h2) in md_h2s, f"twin is missing the H2: {block_text(h2)!r}"
+    page_h2s = [block_text(h2) for h2 in re.findall(r"<h2\b[^>]*>(.*?)</h2>", HTML, re.S | re.I)]
+    # Same headings, same order, same count: an H2 missing from, added to or moved in the twin fails.
+    assert md_h2s == page_h2s, f"twin H2s {md_h2s} != page H2s {page_h2s}"
     assert f"HTML version: https://tatendaz.github.io/{SLUG}/" in MD
     assert "https://tatendaz.github.io/llms.txt" in MD
     assert not re.search(r"<(div|span|script|style)\b", MD), "twin must be plain Markdown"

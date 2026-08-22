@@ -14,7 +14,7 @@ Carried over from the Tatendaz/Tatendaz.github.io session that produced its PR #
 2. "can you also check subpages as well like yapui, claude-usage, etc.,"
 3. Asked whether to fix the five project pages in their own repos; answer: "Yes, fix all
    five (Recommended)".
-4. "and make sure the subpages achieve pairity also and use subagents to not fill the context
+4. "and make sure the subpages achieve parity also and use subagents to not fill the context
    window here"
 
 ## Steps taken
