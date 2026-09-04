@@ -37,7 +37,10 @@ defaults:
 jobs:
   docs-gate:
     # Dependabot bumps never carry docs entries; the docs gate is for human/agent PRs.
-    if: github.actor != 'dependabot[bot]'
+    # Bind to the PR author, not github.actor: the actor is whoever triggered
+    # this run, so a human's "Update branch" click (a new synchronize run)
+    # turns the skip off and the gate demands docs a bump PR never has (#9).
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
     name: Docs gate (features + summaries)
     runs-on: ubuntu-latest
     timeout-minutes: 5
