@@ -94,6 +94,17 @@ jobs:
             -f context=review-failover -f description="Backup review running" \
             -f target_url="$GITHUB_SERVER_URL/$REPO/actions/runs/$GITHUB_RUN_ID" >/dev/null
 
+      # Install tools BEFORE the PR code lands, from a clean folder, so no file in the
+      # PR (.npmrc, package.json, ...) can influence what runs next to the secrets.
+      - name: Install open-code-review
+        if: steps.pr.outputs.go == 'true'
+        working-directory: ${{ runner.temp }}
+        run: |
+          npm install -g "@alibaba-group/open-code-review@$OCR_VERSION"
+          ocr --version
+
+      # The PR code is only READ after this point (git diff, ocr delegate, Claude Read/Grep).
+      # Nothing from the checkout is built, installed, or executed.
       - name: Check out the PR head
         if: steps.pr.outputs.go == 'true'
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -101,15 +112,6 @@ jobs:
           ref: ${{ steps.pr.outputs.head }}
           fetch-depth: 0
           persist-credentials: false
-
-      - name: Install open-code-review
-        if: steps.pr.outputs.go == 'true'
-        run: |
-          auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')
-          git -c "http.extraheader=AUTHORIZATION: basic $auth" \
-            fetch --no-tags origin "${{ steps.pr.outputs.base }}"
-          npm install -g "@alibaba-group/open-code-review@$OCR_VERSION"
-          ocr --version
 
       - name: Review with Claude
         if: steps.pr.outputs.go == 'true'
