@@ -52,11 +52,14 @@ jobs:
           # GitHub runs `shell: bash` as `bash -e -o pipefail`. This script checks every exit code
           # itself (grep exits 1 on "no match"), so -e must be off or the job dies before rc=$?.
           set +e
-          base=$(gh api "repos/$REPO" --jq .default_branch)
+          # A failed read turns the run red, so "checked nothing" never looks like "nothing to do".
+          base=$(gh api "repos/$REPO" --jq .default_branch) && [ -n "$base" ] \
+            || { echo "could not read the default branch; merging nothing"; exit 1; }
           prs=$(gh api --paginate "repos/$REPO/pulls?state=open&base=$base&per_page=100" \
             --jq ".[] | select(.draft==false) | select(.head.repo.full_name==\"$REPO\")
                  | select(.user.login==\"dependabot[bot]\" or (.user.login==\"$OWNER\"
-                     and ((.head.ref | startswith(\"security/\")) or any(.labels[]; .name==\"automerge\")))) | .number")
+                     and ((.head.ref | startswith(\"security/\")) or any(.labels[]; .name==\"automerge\")))) | .number") \
+            || { echo "could not list open PRs; merging nothing"; exit 1; }
           [ -z "$prs" ] && { echo "no open PRs to check"; exit 0; }
 
           # Optional per-repo hold list: one extended regex per line, matched against changed

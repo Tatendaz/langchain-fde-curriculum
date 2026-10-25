@@ -24,7 +24,7 @@ first week, when most bad releases are caught and pulled.
   most 3 open PRs each. Validated against the schemastore Dependabot schema.
 - `.github/workflows/zizmor.yml` (new): `pipx run zizmor==1.31.1
   --min-severity high .github/workflows`, read-only token, checkout pinned.
-- `.github/workflows/merge-when-clean.yml` (new): the owner's template v5,
+- `.github/workflows/merge-when-clean.yml` (new): the owner's template v6,
   unchanged.
 - `.github/workflows/dependabot-auto-merge.yml`: removed.
 

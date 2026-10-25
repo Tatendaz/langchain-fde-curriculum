@@ -7,7 +7,7 @@
 
 1. "PHASE 2 from coordinator (owner approved): read HARDENING.md and do it for
    each of your repos."
-2. "Add the auto-merge job from templates/merge-when-clean.yml." (later: v5)
+2. "Add the auto-merge job from templates/merge-when-clean.yml." (later: v6)
 3. "Delete .github/workflows/dependabot-auto-merge.yml in every hardening PR."
 
 ## Steps taken
@@ -16,8 +16,8 @@
   Dependabot schema: ok.
 - Tried `exclude-newer = "7 days"` in a scratch copy: `uv lock --dry-run`
   printed `Update certifi v2026.10.19 -> v2026.10.18`. Not adopted.
-- Added `zizmor.yml` and the merge-when-clean template (v5, sha256
-  1c493dd7...). Removed `dependabot-auto-merge.yml`.
+- Added `zizmor.yml` and the merge-when-clean template (v6, sha256
+  af7e7bd9...). Removed `dependabot-auto-merge.yml`.
 - `zizmor .github/workflows`: no findings. `actionlint`: clean.
   `uv run pytest -q`: passed.
 
