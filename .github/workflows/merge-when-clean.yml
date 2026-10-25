@@ -1,21 +1,10 @@
 name: Merge when clean
 
-# Merges an open PR into the default branch once it is clean on its head commit:
-#   1. every check run and commit status finished green,
-#   2. a real review ran on that commit: CodeRabbit "Review completed", or the
-#      owner's backup review (`review-failover` = success, posted by the owner),
-#   3. 0 unresolved review threads, no "changes requested" review, no merge conflicts,
-#      and at least one CI check ran. Anything it cannot read in full blocks the merge.
-# Covers only PRs that opt in: Dependabot PRs (not major updates), and the owner's PRs from a
-# `security/` branch or labelled `automerge`. Other PRs are left to the owner and
-# to Claude sessions working under the merge-when-clean rule. Skips drafts, forks, Night Shift PRs,
-# PRs labelled `needs-owner` / `do-not-merge`, and PRs that touch database rules,
-# migrations, infra, this file, or a path listed in the repo's optional
-# `.github/merge-hold-paths` (one regex per line, read from the default branch).
-# Owner decision 2026-10-25.
-#
-# A merge made with GITHUB_TOKEN does not start other workflows, so a deploy that
-# runs `on: push` to the default branch will not fire after an automatic merge.
+# Calls the shared merge-when-clean job in Tatendaz/coderabbit-failover. Its header and
+# docs/merge-when-clean.md there list what it merges, what it skips, and how a fix is released.
+# Extra paths the owner merges go in .github/merge-hold-paths (one regex per line).
+# Pinned to the moving major tag, allowed by .github/zizmor.yml. Do not add a
+# `merge-when-clean` concurrency group here: the shared job holds it.
 on:
   schedule:
     - cron: '23,53 * * * *'
@@ -30,138 +19,7 @@ permissions:
   checks: read
   statuses: read
 
-concurrency:
-  group: merge-when-clean
-  cancel-in-progress: false
-
 jobs:
   merge:
-    name: Merge when clean
     if: github.event_name != 'status' || github.event.state == 'success'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      REPO: ${{ github.repository }}
-      OWNER: ${{ github.repository_owner }}
-    steps:
-      - name: Merge every clean PR
-        shell: bash
-        run: |
-          set -uo pipefail
-          # GitHub runs `shell: bash` as `bash -e -o pipefail`. This script checks every exit code
-          # itself (grep exits 1 on "no match"), so -e must be off or the job dies before rc=$?.
-          set +e
-          # A failed read turns the run red, so "checked nothing" never looks like "nothing to do".
-          base=$(gh api "repos/$REPO" --jq .default_branch) && [ -n "$base" ] \
-            || { echo "could not read the default branch; merging nothing"; exit 1; }
-          prs=$(gh api --paginate "repos/$REPO/pulls?state=open&base=$base&per_page=100" \
-            --jq ".[] | select(.draft==false) | select(.head.repo.full_name==\"$REPO\")
-                 | select(.user.login==\"dependabot[bot]\" or (.user.login==\"$OWNER\"
-                     and ((.head.ref | startswith(\"security/\")) or any(.labels[]; .name==\"automerge\")))) | .number") \
-            || { echo "could not list open PRs; merging nothing"; exit 1; }
-          [ -z "$prs" ] && { echo "no open PRs to check"; exit 0; }
-
-          # Optional per-repo hold list: one extended regex per line, matched against changed
-          # paths. Read from the default branch, never from the PR. Unreadable (other than
-          # missing) means merge nothing this run.
-          err=$(mktemp)
-          if hold=$(gh api "repos/$REPO/contents/.github/merge-hold-paths?ref=$base" \
-                      -H "Accept: application/vnd.github.raw" 2>"$err"); then
-            hold=$(grep -vE '^[[:space:]]*(#|$)' <<<"$hold" || true)
-          elif grep -q 'HTTP 404' "$err"; then
-            hold=""
-          else
-            echo "could not read .github/merge-hold-paths: $(head -c 200 "$err"); merging nothing"; exit 0
-          fi
-          if [ -n "$hold" ]; then
-            echo "hold paths: $(tr '\n' ' ' <<<"$hold")"
-            # grep exits 2 on a bad pattern; a broken hold list must not read as "no match".
-            grep -Eq -f <(printf '%s\n' "$hold") </dev/null; rc=$?
-            if [ "$rc" -gt 1 ]; then echo "bad regex in .github/merge-hold-paths (grep $rc); merging nothing"; exit 0; fi
-          fi
-
-          # 0 when any "from A to B" in the text changes the major version (or the minor of a 0.x).
-          is_major() {
-            local a b seen=no
-            while read -r a b; do
-              seen=yes; a=${a#v}; a=${a%.}; b=${b#v}; b=${b%.}
-              [ "${a%%.*}" != "${b%%.*}" ] && return 0
-              [ "${a%%.*}" = 0 ] && [ "$(cut -d. -f2 <<<"$a")" != "$(cut -d. -f2 <<<"$b")" ] && return 0
-            done < <(grep -oE 'from v?[0-9][0-9A-Za-z.+-]* to v?[0-9][0-9A-Za-z.+-]*' | awk '{print $2, $4}')
-            # No version found: treat as major, so a person looks at it.
-            [ "$seen" = no ]
-          }
-
-          check_pr() {
-            local pr=$1 j sha title body author labels changed files paths rc runs total pending failed st bad fo cr reviewed gql decision more unresolved changes
-            j=$(gh api "repos/$REPO/pulls/$pr") || { echo "#$pr: could not read the PR"; return; }
-            sha=$(jq -r .head.sha <<<"$j")
-            title=$(jq -r '.title // ""' <<<"$j")
-            body=$(jq -r '.body // ""' <<<"$j")
-            author=$(jq -r .user.login <<<"$j")
-            labels=$(jq -r '[.labels[].name] | join(",")' <<<"$j")
-            case ",$labels," in *,needs-owner,*|*,do-not-merge,*) echo "#$pr: skip (label)"; return;; esac
-            if grep -q 'Tatendaz/ideas-inbox#17' <<<"$body"; then echo "#$pr: skip (Night Shift PR)"; return; fi
-            if [ "$author" = "dependabot[bot]" ] && is_major <<<"$title"$'\n'"$body"; then
-              echo "#$pr: skip (Dependabot major update; a person merges these)"; return
-            fi
-
-            # Fail closed: if the file list cannot be read in full, do not merge.
-            changed=$(jq -r .changed_files <<<"$j")
-            files=$(gh api --paginate "repos/$REPO/pulls/$pr/files?per_page=100" \
-              --jq '.[] | "\(.filename)\t\(.previous_filename // "")"') || { echo "#$pr: could not read the file list"; return; }
-            if [ -z "$files" ] || [ "$(grep -c . <<<"$files")" != "$changed" ]; then
-              echo "#$pr: file list incomplete ($changed changed); not merging"; return
-            fi
-            # No pipes into grep -q: under pipefail an early grep exit can turn a match into a failure.
-            paths=$(tr '\t' '\n' <<<"$files")
-            grep -Eq '(^|/)(firestore\.rules|storage\.rules|database\.rules\.json)$|(^|/)migrations/|(^|/)terraform/|\.tf$|^\.github/workflows/merge-when-clean\.yml$|^\.github/merge-hold-paths$' <<<"$paths"; rc=$?
-            if [ "$rc" != 1 ]; then echo "#$pr: skip (touches files the owner merges, or the check failed: $rc)"; return; fi
-            if [ -n "$hold" ]; then
-              grep -Eq -f <(printf '%s\n' "$hold") <<<"$paths"; rc=$?
-              if [ "$rc" != 1 ]; then echo "#$pr: skip (matches .github/merge-hold-paths, or the check failed: $rc)"; return; fi
-            fi
-            if [ "$(jq -r .mergeable_state <<<"$j")" = "dirty" ]; then echo "#$pr: merge conflicts"; return; fi
-
-            runs=$(gh api --paginate "repos/$REPO/commits/$sha/check-runs?per_page=100" --jq '.check_runs[]' \
-              | jq -s '[.[] | select(.name!="Merge when clean")] | group_by(.name) | map(max_by(.started_at))') \
-              || { echo "#$pr: could not read checks"; return; }
-            total=$(jq length <<<"$runs")
-            pending=$(jq '[.[] | select(.status!="completed")] | length' <<<"$runs")
-            failed=$(jq '[.[] | select(.status=="completed" and ((.conclusion // "") | IN("success","neutral","skipped") | not))] | length' <<<"$runs")
-
-            st=$(gh api --paginate "repos/$REPO/commits/$sha/statuses?per_page=100" --jq '.[]' \
-              | jq -s 'group_by(.context) | map(sort_by(.created_at) | last)') \
-              || { echo "#$pr: could not read statuses"; return; }
-            bad=$(jq '[.[] | select(.context!="CodeRabbit" and .context!="review-failover") | select(.state!="success")] | length' <<<"$st")
-            fo=$(jq -r '[.[] | select(.context=="review-failover")][0] | "\(.state // "none") \(.creator.login // "-")"' <<<"$st")
-            cr=$(jq -r '[.[] | select(.context=="CodeRabbit")][0] | "\(.state // "none") \(.creator.login // "-") \(.description // "")"' <<<"$st")
-            reviewed=no
-            [ "$fo" = "success $OWNER" ] && reviewed=yes
-            case "$cr" in "success coderabbitai[bot] "*"Review completed"*) reviewed=yes;; esac
-
-            # reviewDecision is null when no rule requires reviews, so also read each reviewer's
-            # latest opinionated review and block on any CHANGES_REQUESTED.
-            # shellcheck disable=SC2016  # GraphQL variables, not shell
-            gql=$(gh api graphql -f query='query($o:String!,$n:String!,$pr:Int!){ repository(owner:$o,name:$n){ pullRequest(number:$pr){
-                reviewDecision
-                latestOpinionatedReviews(first:100){ nodes{ state } }
-                reviewThreads(first:100){ pageInfo{ hasNextPage } nodes{ isResolved } } } } }' \
-                -f o="${REPO%/*}" -f n="${REPO#*/}" -F pr="$pr" \
-              --jq '.data.repository.pullRequest | "\(.reviewDecision // "NONE") \(.reviewThreads.pageInfo.hasNextPage) \([.reviewThreads.nodes[] | select(.isResolved==false)] | length) \([.latestOpinionatedReviews.nodes[] | select(.state=="CHANGES_REQUESTED")] | length)"') \
-              || { echo "#$pr: could not read reviews"; return; }
-            read -r decision more unresolved changes <<<"$gql"
-
-            echo "#$pr $sha: checks=$total pending=$pending failed=$failed, other statuses not green=$bad, reviewed=$reviewed, decision=$decision, changes requested=$changes, unresolved threads=$unresolved (more=$more)"
-            if [ "$total" = 0 ]; then echo "#$pr: no CI checks on this commit yet"; return; fi
-            if [ "$pending" != 0 ] || [ "$failed" != 0 ] || [ "$bad" != 0 ] || [ "$reviewed" != yes ] \
-               || [ "$decision" = CHANGES_REQUESTED ] || [ "$changes" != 0 ] || [ "$more" != false ] || [ "$unresolved" != 0 ]; then
-              echo "#$pr: not clean yet"; return
-            fi
-            gh pr merge "$pr" --repo "$REPO" --squash --delete-branch --match-head-commit "$sha" \
-              && echo "#$pr: merged" || echo "#$pr: GitHub refused the merge"
-          }
-
-          # Oldest first, so a stacked PR's base merges before the PR built on it.
-          while read -r pr; do check_pr "$pr" </dev/null; done < <(sort -n <<<"$prs")
+    uses: Tatendaz/coderabbit-failover/.github/workflows/reusable-merge-when-clean.yml@merge-when-clean-v1
