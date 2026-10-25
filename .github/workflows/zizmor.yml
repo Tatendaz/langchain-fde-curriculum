@@ -1,0 +1,23 @@
+name: zizmor
+
+# Static analysis of the workflow files: fails on high-severity findings
+# (unpinned actions, template injection, dangerous triggers).
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  zizmor:
+    name: zizmor (workflows)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Scan .github/workflows
+        run: pipx run zizmor==1.31.1 --min-severity high .github/workflows
