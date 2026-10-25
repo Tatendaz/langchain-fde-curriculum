@@ -106,7 +106,10 @@ def fetch_url(url: str) -> str:
         name = f"[{parsed.host}]" if ":" in parsed.host else parsed.host
         host_header = f"{name}:{parsed.port}" if parsed.port else name
         extensions = {"sni_hostname": parsed.host} if parsed.scheme == "https" else {}
-        with httpx.Client(timeout=15, follow_redirects=False) as client:
+        # trust_env=False: through an HTTPS_PROXY tunnel, httpx checks the
+        # certificate against the IP and ignores sni_hostname, so every https
+        # fetch would fail. It also skips SSL_CERT_FILE and NETRC.
+        with httpx.Client(timeout=15, follow_redirects=False, trust_env=False) as client:
             resp = client.get(
                 parsed.copy_with(host=address),
                 headers={"Host": host_header},

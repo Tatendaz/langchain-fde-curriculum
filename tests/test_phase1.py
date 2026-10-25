@@ -29,6 +29,7 @@ def _stub_get(monkeypatch, *, response=None, error=None):
                 "url": str(url),
                 "timeout": client.timeout.read,
                 "follow_redirects": client.follow_redirects,
+                "trust_env": client.trust_env,
                 **kwargs,
             }
         )
@@ -121,6 +122,7 @@ def test_fetch_url_returns_an_error_string_on_network_failure(monkeypatch):
 
 def test_fetch_url_sets_a_timeout_and_does_not_follow_redirects(monkeypatch):
     # An agent tool with no timeout is how a run hangs forever; pin the contract.
+    # trust_env=False keeps a proxy tunnel from checking TLS against the IP.
     calls = _stub_get(monkeypatch, response=httpx.Response(200, text="ok"))
     fetch_url.invoke({"url": "https://example.com/redirect"})
     assert calls == [
@@ -128,6 +130,7 @@ def test_fetch_url_sets_a_timeout_and_does_not_follow_redirects(monkeypatch):
             "url": "https://93.184.215.14/redirect",
             "timeout": 15,
             "follow_redirects": False,
+            "trust_env": False,
             "headers": {"Host": "example.com"},
             "extensions": {"sni_hostname": "example.com"},
         }
