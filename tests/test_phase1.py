@@ -187,6 +187,28 @@ def test_fetch_url_sends_an_international_name_as_punycode(monkeypatch):
     assert calls[0]["extensions"] == {"sni_hostname": "xn--bcher-kva.de"}
 
 
+def test_fetch_url_falls_back_to_the_next_checked_address(monkeypatch):
+    # First answer unreachable (IPv6 with no route), second one works.
+    def two_answers(host, port, *args, **kwargs):
+        return [
+            (socket.AF_INET6, socket.SOCK_STREAM, 6, "", ("2606:2800:21f:cb07:6820:80da:af6b:8b2c", 0, 0, 0)),
+            (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.215.14", 0)),
+        ]
+
+    monkeypatch.setattr(socket, "getaddrinfo", two_answers)
+    calls = []
+
+    def fake_get(client, url, **kwargs):
+        calls.append(str(url))
+        if len(calls) == 1:
+            raise httpx.ConnectError("no route to host")
+        return httpx.Response(200, text="ok")
+
+    monkeypatch.setattr(httpx.Client, "get", fake_get)
+    assert fetch_url.invoke({"url": "http://example.com/"}) == "HTTP 200\nok"
+    assert calls == ["http://[2606:2800:21f:cb07:6820:80da:af6b:8b2c]/", "http://93.184.215.14/"]
+
+
 def test_fetch_url_resolves_once_so_dns_cannot_change_under_it(monkeypatch):
     # DNS rebinding: a public answer for the check, a private one after it.
     answers = iter(["93.184.215.14", "127.0.0.1"])
