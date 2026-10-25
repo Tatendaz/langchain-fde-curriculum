@@ -6,6 +6,8 @@ the network. Nothing here needs Ollama, an API key, or connectivity — that is
 the standing rule for this repo's suite (see CONTRIBUTING.md).
 """
 
+import socket
+
 import httpx
 import pytest
 
@@ -13,7 +15,7 @@ from phase1.agent import calculator, fetch_url, word_count
 
 
 def _stub_get(monkeypatch, *, response=None, error=None):
-    """Point `httpx.get` at a canned response (or error) and record the call.
+    """Point `httpx.Client.get` at a canned response (or error) and record the call.
 
     Returns the list of recorded calls so a test can assert *how* the request
     was made, not just what came back. A real `httpx.Response` is used rather
@@ -21,14 +23,34 @@ def _stub_get(monkeypatch, *, response=None, error=None):
     """
     calls = []
 
-    def fake_get(url, **kwargs):
-        calls.append({"url": url, **kwargs})
+    def fake_get(client, url, **kwargs):
+        calls.append(
+            {
+                "url": str(url),
+                "timeout": client.timeout.read,
+                "follow_redirects": client.follow_redirects,
+                "trust_env": client.trust_env,
+                **kwargs,
+            }
+        )
         if error is not None:
             raise error
         return response
 
-    monkeypatch.setattr(httpx, "get", fake_get)
+    monkeypatch.setattr(httpx.Client, "get", fake_get)
     return calls
+
+
+@pytest.fixture(autouse=True)
+def _offline_dns(monkeypatch):
+    """Answer DNS without the network: localhost is loopback, every other name
+    gets a public address (example.com's)."""
+
+    def fake_getaddrinfo(host, port, *args, **kwargs):
+        ip = "127.0.0.1" if host == "localhost" else "93.184.215.14"
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", (ip, 0))]
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
 
 
 # --- calculator -----------------------------------------------------------
@@ -98,13 +120,45 @@ def test_fetch_url_returns_an_error_string_on_network_failure(monkeypatch):
     assert "connection refused" in out
 
 
-def test_fetch_url_follows_redirects_and_sets_a_timeout(monkeypatch):
+def test_fetch_url_sets_a_timeout_and_does_not_follow_redirects(monkeypatch):
     # An agent tool with no timeout is how a run hangs forever; pin the contract.
+    # trust_env=False keeps a proxy tunnel from checking TLS against the IP.
     calls = _stub_get(monkeypatch, response=httpx.Response(200, text="ok"))
     fetch_url.invoke({"url": "https://example.com/redirect"})
     assert calls == [
-        {"url": "https://example.com/redirect", "timeout": 15, "follow_redirects": True}
+        {
+            "url": "https://93.184.215.14/redirect",
+            "timeout": 15,
+            "follow_redirects": False,
+            "trust_env": False,
+            "headers": {"Host": "example.com"},
+            "extensions": {"sni_hostname": "example.com"},
+        }
     ]
+
+
+def test_fetch_url_hands_a_redirect_back_to_the_model(monkeypatch):
+    # The new URL goes back to the model, so the next fetch_url call checks it too.
+    _stub_get(monkeypatch, response=httpx.Response(302, headers={"location": "/next"}))
+    out = fetch_url.invoke({"url": "https://example.com/start"})
+    assert out == "HTTP 302\nredirects to https://example.com/next"
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://169.254.169.254/latest/meta-data/",  # cloud metadata
+        "http://127.0.0.1:11434/api/tags",  # Ollama on this machine
+        "http://[::1]/",
+        "http://10.0.0.5/",
+        "http://localhost:8080/",  # a name that resolves to loopback
+        "file:///etc/passwd",
+    ],
+)
+def test_fetch_url_refuses_non_public_addresses(monkeypatch, url):
+    calls = _stub_get(monkeypatch, response=httpx.Response(200, text="secret"))
+    assert fetch_url.invoke({"url": url}) == "error: only public http(s) addresses can be fetched"
+    assert calls == []
 
 
 def test_fetch_url_makes_exactly_one_request(monkeypatch):
@@ -114,8 +168,59 @@ def test_fetch_url_makes_exactly_one_request(monkeypatch):
 
 
 @pytest.mark.parametrize("scheme", ["http", "https"])
-def test_fetch_url_passes_the_url_through_unmodified(monkeypatch, scheme):
-    url = f"{scheme}://example.com/a/b?q=1&r=2"
+def test_fetch_url_connects_to_the_checked_address(monkeypatch, scheme):
+    # Path, query and port survive; only the host becomes the checked address,
+    # and the name moves to the Host header (and to TLS SNI for https).
     calls = _stub_get(monkeypatch, response=httpx.Response(200, text="ok"))
-    fetch_url.invoke({"url": url})
-    assert calls[0]["url"] == url
+    fetch_url.invoke({"url": f"{scheme}://example.com:8443/a/b?q=1&r=2"})
+    assert calls[0]["url"] == f"{scheme}://93.184.215.14:8443/a/b?q=1&r=2"
+    assert calls[0]["headers"] == {"Host": "example.com:8443"}
+    expected_sni = {"sni_hostname": "example.com"} if scheme == "https" else {}
+    assert calls[0]["extensions"] == expected_sni
+
+
+def test_fetch_url_sends_an_international_name_as_punycode(monkeypatch):
+    # httpx gives the Unicode name back; headers and SNI must be ASCII.
+    calls = _stub_get(monkeypatch, response=httpx.Response(200, text="ok"))
+    assert fetch_url.invoke({"url": "https://bücher.de/"}) == "HTTP 200\nok"
+    assert calls[0]["headers"] == {"Host": "xn--bcher-kva.de"}
+    assert calls[0]["extensions"] == {"sni_hostname": "xn--bcher-kva.de"}
+
+
+@pytest.mark.parametrize(
+    "first_error",
+    [httpx.ConnectError("no route to host"), httpx.ConnectTimeout("timed out")],
+)
+def test_fetch_url_falls_back_to_the_next_checked_address(monkeypatch, first_error):
+    # First answer unreachable (IPv6 with no route, or silently dropped), second one works.
+    def two_answers(host, port, *args, **kwargs):
+        return [
+            (socket.AF_INET6, socket.SOCK_STREAM, 6, "", ("2606:2800:21f:cb07:6820:80da:af6b:8b2c", 0, 0, 0)),
+            (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.215.14", 0)),
+        ]
+
+    monkeypatch.setattr(socket, "getaddrinfo", two_answers)
+    calls = []
+
+    def fake_get(client, url, **kwargs):
+        calls.append(str(url))
+        if len(calls) == 1:
+            raise first_error
+        return httpx.Response(200, text="ok")
+
+    monkeypatch.setattr(httpx.Client, "get", fake_get)
+    assert fetch_url.invoke({"url": "http://example.com/"}) == "HTTP 200\nok"
+    assert calls == ["http://[2606:2800:21f:cb07:6820:80da:af6b:8b2c]/", "http://93.184.215.14/"]
+
+
+def test_fetch_url_resolves_once_so_dns_cannot_change_under_it(monkeypatch):
+    # DNS rebinding: a public answer for the check, a private one after it.
+    answers = iter(["93.184.215.14", "127.0.0.1"])
+
+    def rebinding_getaddrinfo(host, port, *args, **kwargs):
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", (next(answers), 0))]
+
+    monkeypatch.setattr(socket, "getaddrinfo", rebinding_getaddrinfo)
+    calls = _stub_get(monkeypatch, response=httpx.Response(200, text="ok"))
+    fetch_url.invoke({"url": "http://rebind.example/"})
+    assert calls[0]["url"] == "http://93.184.215.14/"

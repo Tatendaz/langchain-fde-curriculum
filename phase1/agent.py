@@ -15,8 +15,10 @@ Then open https://smith.langchain.com and expand the single agent trace.
 from __future__ import annotations
 
 import ast
+import ipaddress
 import operator
 import os
+import socket
 from pathlib import Path
 
 import httpx
@@ -70,11 +72,63 @@ def word_count(text: str) -> int:
     return len(text.split())
 
 
+# The model picks the URL, and it composes tool arguments from text it read,
+# so a fetched page can ask it to fetch http://169.254.169.254/ (cloud
+# metadata) or a service on localhost. Only public addresses are allowed. The
+# request goes to the exact address that was checked (the name stays in the
+# Host header and the TLS certificate check), so a DNS answer that changes
+# after the check cannot swap in a private address. Redirects are not
+# followed: a redirect comes back to the model as a new URL, which goes
+# through the same check on the next call.
+def _public_addresses(host: str) -> list[str]:
+    """Return every address of `host` if all of them are public, else []."""
+    try:
+        addrs = [ipaddress.ip_address(host)]
+    except ValueError:
+        try:
+            infos = socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)
+        except OSError:
+            return []
+        addrs = [ipaddress.ip_address(info[4][0]) for info in infos]
+    if not addrs or not all(addr.is_global for addr in addrs):
+        return []
+    return list(dict.fromkeys(str(addr) for addr in addrs))
+
+
 @tool
 def fetch_url(url: str) -> str:
-    """HTTP GET a URL and return its status code plus the first 2000 characters."""
+    """HTTP GET a public http(s) URL and return its status code plus the first 2000 characters."""
     try:
-        resp = httpx.get(url, timeout=15, follow_redirects=True)
+        parsed = httpx.URL(url)
+        # raw_host is the ASCII (punycode) form; headers and SNI must be ASCII.
+        host = parsed.raw_host.decode("ascii")
+        addresses = _public_addresses(host) if parsed.scheme in ("http", "https") else []
+        if not addresses:
+            return "error: only public http(s) addresses can be fetched"
+        name = f"[{host}]" if ":" in host else host
+        host_header = f"{name}:{parsed.port}" if parsed.port else name
+        extensions = {"sni_hostname": host} if parsed.scheme == "https" else {}
+        # trust_env=False: through an HTTPS_PROXY tunnel, httpx checks the
+        # certificate against the IP and ignores sni_hostname, so every https
+        # fetch would fail. It also skips SSL_CERT_FILE and NETRC.
+        # Try each checked address in order, like a normal connect would, so a
+        # host whose first answer is unreachable (say, IPv6 with no route)
+        # still works. A timeout counts too: a dropped packet looks like one.
+        with httpx.Client(timeout=15, follow_redirects=False, trust_env=False) as client:
+            for i, address in enumerate(addresses):
+                try:
+                    resp = client.get(
+                        parsed.copy_with(host=address),
+                        headers={"Host": host_header},
+                        extensions=extensions,
+                    )
+                    break
+                except (httpx.ConnectError, httpx.ConnectTimeout):
+                    if i == len(addresses) - 1:
+                        raise
+        if resp.is_redirect:
+            target = parsed.join(resp.headers.get("location", ""))
+            return f"HTTP {resp.status_code}\nredirects to {target}"
         return f"HTTP {resp.status_code}\n{resp.text[:2000]}"
     except Exception as exc:  # surface the error back to the model
         return f"error: {exc}"
