@@ -100,12 +100,14 @@ def fetch_url(url: str) -> str:
     """HTTP GET a public http(s) URL and return its status code plus the first 2000 characters."""
     try:
         parsed = httpx.URL(url)
-        address = _public_address(parsed.host) if parsed.scheme in ("http", "https") else None
+        # raw_host is the ASCII (punycode) form; headers and SNI must be ASCII.
+        host = parsed.raw_host.decode("ascii")
+        address = _public_address(host) if parsed.scheme in ("http", "https") else None
         if address is None:
             return "error: only public http(s) addresses can be fetched"
-        name = f"[{parsed.host}]" if ":" in parsed.host else parsed.host
+        name = f"[{host}]" if ":" in host else host
         host_header = f"{name}:{parsed.port}" if parsed.port else name
-        extensions = {"sni_hostname": parsed.host} if parsed.scheme == "https" else {}
+        extensions = {"sni_hostname": host} if parsed.scheme == "https" else {}
         # trust_env=False: through an HTTPS_PROXY tunnel, httpx checks the
         # certificate against the IP and ignores sni_hostname, so every https
         # fetch would fail. It also skips SSL_CERT_FILE and NETRC.

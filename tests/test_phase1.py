@@ -179,6 +179,14 @@ def test_fetch_url_connects_to_the_checked_address(monkeypatch, scheme):
     assert calls[0]["extensions"] == expected_sni
 
 
+def test_fetch_url_sends_an_international_name_as_punycode(monkeypatch):
+    # httpx gives the Unicode name back; headers and SNI must be ASCII.
+    calls = _stub_get(monkeypatch, response=httpx.Response(200, text="ok"))
+    assert fetch_url.invoke({"url": "https://bücher.de/"}) == "HTTP 200\nok"
+    assert calls[0]["headers"] == {"Host": "xn--bcher-kva.de"}
+    assert calls[0]["extensions"] == {"sni_hostname": "xn--bcher-kva.de"}
+
+
 def test_fetch_url_resolves_once_so_dns_cannot_change_under_it(monkeypatch):
     # DNS rebinding: a public answer for the check, a private one after it.
     answers = iter(["93.184.215.14", "127.0.0.1"])
