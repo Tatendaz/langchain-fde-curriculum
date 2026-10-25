@@ -16,4 +16,4 @@ mark a minor update as major.
 
 ## What changed
 - `merge-when-clean.yml`: same triggers, permissions and `status` filter; the job is `uses:`.
-- `.github/zizmor.yml`: allows a tag pin for `Tatendaz/coderabbit-failover/*` only.
+- `.github/zizmor.yml`: allows a tag pin for that one workflow path only.

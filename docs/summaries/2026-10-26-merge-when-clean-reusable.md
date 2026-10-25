@@ -9,5 +9,5 @@
 
 ## Steps
 - Replaced `.github/workflows/merge-when-clean.yml` with the caller. Kept `.github/merge-hold-paths`.
-- Added `.github/zizmor.yml` with a `ref-pin` policy for `Tatendaz/coderabbit-failover/*`.
+- Added `.github/zizmor.yml` with a `ref-pin` policy for that one workflow path.
 - actionlint and zizmor clean locally.

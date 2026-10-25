@@ -1,8 +1,8 @@
-# zizmor wants every `uses:` pinned to a sha. One first-party exception: the shared
+# zizmor wants every `uses:` pinned to a sha. One exception, this exact path: the shared
 # merge-when-clean workflow is pinned to the owner's moving tag `merge-when-clean-v1`, so a fix
 # ships with one tag move. Every other `uses:` still needs a sha (zizmor's implicit "*": hash-pin).
 rules:
   unpinned-uses:
     config:
       policies:
-        "Tatendaz/coderabbit-failover/*": ref-pin
+        "Tatendaz/coderabbit-failover/.github/workflows/reusable-merge-when-clean.yml": ref-pin
