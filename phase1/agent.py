@@ -15,8 +15,10 @@ Then open https://smith.langchain.com and expand the single agent trace.
 from __future__ import annotations
 
 import ast
+import ipaddress
 import operator
 import os
+import socket
 from pathlib import Path
 
 import httpx
@@ -70,11 +72,35 @@ def word_count(text: str) -> int:
     return len(text.split())
 
 
+# The model picks the URL, and it composes tool arguments from text it read,
+# so a fetched page can ask it to fetch http://169.254.169.254/ (cloud
+# metadata) or a service on localhost. Only public addresses are allowed, and
+# redirects are not followed: a redirect comes back to the model as a new URL,
+# which goes through the same check on the next call. (A DNS answer can still
+# change between this check and the request; fine for a demo, not for prod.)
+def _is_public_host(host: str) -> bool:
+    try:
+        addrs = [ipaddress.ip_address(host)]
+    except ValueError:
+        try:
+            infos = socket.getaddrinfo(host, None)
+        except OSError:
+            return False
+        addrs = [ipaddress.ip_address(info[4][0]) for info in infos]
+    return bool(addrs) and all(addr.is_global for addr in addrs)
+
+
 @tool
 def fetch_url(url: str) -> str:
-    """HTTP GET a URL and return its status code plus the first 2000 characters."""
+    """HTTP GET a public http(s) URL and return its status code plus the first 2000 characters."""
     try:
-        resp = httpx.get(url, timeout=15, follow_redirects=True)
+        parsed = httpx.URL(url)
+        if parsed.scheme not in ("http", "https") or not _is_public_host(parsed.host):
+            return "error: only public http(s) addresses can be fetched"
+        resp = httpx.get(url, timeout=15, follow_redirects=False)
+        if resp.is_redirect:
+            target = parsed.join(resp.headers.get("location", ""))
+            return f"HTTP {resp.status_code}\nredirects to {target}"
         return f"HTTP {resp.status_code}\n{resp.text[:2000]}"
     except Exception as exc:  # surface the error back to the model
         return f"error: {exc}"

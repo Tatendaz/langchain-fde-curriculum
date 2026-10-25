@@ -6,6 +6,8 @@ the network. Nothing here needs Ollama, an API key, or connectivity — that is
 the standing rule for this repo's suite (see CONTRIBUTING.md).
 """
 
+import socket
+
 import httpx
 import pytest
 
@@ -29,6 +31,18 @@ def _stub_get(monkeypatch, *, response=None, error=None):
 
     monkeypatch.setattr(httpx, "get", fake_get)
     return calls
+
+
+@pytest.fixture(autouse=True)
+def _offline_dns(monkeypatch):
+    """Answer DNS without the network: localhost is loopback, every other name
+    gets a public address (example.com's)."""
+
+    def fake_getaddrinfo(host, port, *args, **kwargs):
+        ip = "127.0.0.1" if host == "localhost" else "93.184.215.14"
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", (ip, 0))]
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
 
 
 # --- calculator -----------------------------------------------------------
@@ -98,13 +112,37 @@ def test_fetch_url_returns_an_error_string_on_network_failure(monkeypatch):
     assert "connection refused" in out
 
 
-def test_fetch_url_follows_redirects_and_sets_a_timeout(monkeypatch):
+def test_fetch_url_sets_a_timeout_and_does_not_follow_redirects(monkeypatch):
     # An agent tool with no timeout is how a run hangs forever; pin the contract.
     calls = _stub_get(monkeypatch, response=httpx.Response(200, text="ok"))
     fetch_url.invoke({"url": "https://example.com/redirect"})
     assert calls == [
-        {"url": "https://example.com/redirect", "timeout": 15, "follow_redirects": True}
+        {"url": "https://example.com/redirect", "timeout": 15, "follow_redirects": False}
     ]
+
+
+def test_fetch_url_hands_a_redirect_back_to_the_model(monkeypatch):
+    # The new URL goes back to the model, so the next fetch_url call checks it too.
+    _stub_get(monkeypatch, response=httpx.Response(302, headers={"location": "/next"}))
+    out = fetch_url.invoke({"url": "https://example.com/start"})
+    assert out == "HTTP 302\nredirects to https://example.com/next"
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://169.254.169.254/latest/meta-data/",  # cloud metadata
+        "http://127.0.0.1:11434/api/tags",  # Ollama on this machine
+        "http://[::1]/",
+        "http://10.0.0.5/",
+        "http://localhost:8080/",  # a name that resolves to loopback
+        "file:///etc/passwd",
+    ],
+)
+def test_fetch_url_refuses_non_public_addresses(monkeypatch, url):
+    calls = _stub_get(monkeypatch, response=httpx.Response(200, text="secret"))
+    assert fetch_url.invoke({"url": url}) == "error: only public http(s) addresses can be fetched"
+    assert calls == []
 
 
 def test_fetch_url_makes_exactly_one_request(monkeypatch):
