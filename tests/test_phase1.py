@@ -15,7 +15,7 @@ from phase1.agent import calculator, fetch_url, word_count
 
 
 def _stub_get(monkeypatch, *, response=None, error=None):
-    """Point `httpx.get` at a canned response (or error) and record the call.
+    """Point `httpx.Client.get` at a canned response (or error) and record the call.
 
     Returns the list of recorded calls so a test can assert *how* the request
     was made, not just what came back. A real `httpx.Response` is used rather
@@ -23,13 +23,20 @@ def _stub_get(monkeypatch, *, response=None, error=None):
     """
     calls = []
 
-    def fake_get(url, **kwargs):
-        calls.append({"url": url, **kwargs})
+    def fake_get(client, url, **kwargs):
+        calls.append(
+            {
+                "url": str(url),
+                "timeout": client.timeout.read,
+                "follow_redirects": client.follow_redirects,
+                **kwargs,
+            }
+        )
         if error is not None:
             raise error
         return response
 
-    monkeypatch.setattr(httpx, "get", fake_get)
+    monkeypatch.setattr(httpx.Client, "get", fake_get)
     return calls
 
 
@@ -117,7 +124,13 @@ def test_fetch_url_sets_a_timeout_and_does_not_follow_redirects(monkeypatch):
     calls = _stub_get(monkeypatch, response=httpx.Response(200, text="ok"))
     fetch_url.invoke({"url": "https://example.com/redirect"})
     assert calls == [
-        {"url": "https://example.com/redirect", "timeout": 15, "follow_redirects": False}
+        {
+            "url": "https://93.184.215.14/redirect",
+            "timeout": 15,
+            "follow_redirects": False,
+            "headers": {"Host": "example.com"},
+            "extensions": {"sni_hostname": "example.com"},
+        }
     ]
 
 
@@ -152,8 +165,25 @@ def test_fetch_url_makes_exactly_one_request(monkeypatch):
 
 
 @pytest.mark.parametrize("scheme", ["http", "https"])
-def test_fetch_url_passes_the_url_through_unmodified(monkeypatch, scheme):
-    url = f"{scheme}://example.com/a/b?q=1&r=2"
+def test_fetch_url_connects_to_the_checked_address(monkeypatch, scheme):
+    # Path, query and port survive; only the host becomes the checked address,
+    # and the name moves to the Host header (and to TLS SNI for https).
     calls = _stub_get(monkeypatch, response=httpx.Response(200, text="ok"))
-    fetch_url.invoke({"url": url})
-    assert calls[0]["url"] == url
+    fetch_url.invoke({"url": f"{scheme}://example.com:8443/a/b?q=1&r=2"})
+    assert calls[0]["url"] == f"{scheme}://93.184.215.14:8443/a/b?q=1&r=2"
+    assert calls[0]["headers"] == {"Host": "example.com:8443"}
+    expected_sni = {"sni_hostname": "example.com"} if scheme == "https" else {}
+    assert calls[0]["extensions"] == expected_sni
+
+
+def test_fetch_url_resolves_once_so_dns_cannot_change_under_it(monkeypatch):
+    # DNS rebinding: a public answer for the check, a private one after it.
+    answers = iter(["93.184.215.14", "127.0.0.1"])
+
+    def rebinding_getaddrinfo(host, port, *args, **kwargs):
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", (next(answers), 0))]
+
+    monkeypatch.setattr(socket, "getaddrinfo", rebinding_getaddrinfo)
+    calls = _stub_get(monkeypatch, response=httpx.Response(200, text="ok"))
+    fetch_url.invoke({"url": "http://rebind.example/"})
+    assert calls[0]["url"] == "http://93.184.215.14/"

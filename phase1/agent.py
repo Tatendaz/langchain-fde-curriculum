@@ -74,20 +74,25 @@ def word_count(text: str) -> int:
 
 # The model picks the URL, and it composes tool arguments from text it read,
 # so a fetched page can ask it to fetch http://169.254.169.254/ (cloud
-# metadata) or a service on localhost. Only public addresses are allowed, and
-# redirects are not followed: a redirect comes back to the model as a new URL,
-# which goes through the same check on the next call. (A DNS answer can still
-# change between this check and the request; fine for a demo, not for prod.)
-def _is_public_host(host: str) -> bool:
+# metadata) or a service on localhost. Only public addresses are allowed. The
+# request goes to the exact address that was checked (the name stays in the
+# Host header and the TLS certificate check), so a DNS answer that changes
+# after the check cannot swap in a private address. Redirects are not
+# followed: a redirect comes back to the model as a new URL, which goes
+# through the same check on the next call.
+def _public_address(host: str) -> str | None:
+    """Return an address for `host` if every address it has is public, else None."""
     try:
         addrs = [ipaddress.ip_address(host)]
     except ValueError:
         try:
             infos = socket.getaddrinfo(host, None)
         except OSError:
-            return False
+            return None
         addrs = [ipaddress.ip_address(info[4][0]) for info in infos]
-    return bool(addrs) and all(addr.is_global for addr in addrs)
+    if not addrs or not all(addr.is_global for addr in addrs):
+        return None
+    return str(addrs[0])
 
 
 @tool
@@ -95,9 +100,18 @@ def fetch_url(url: str) -> str:
     """HTTP GET a public http(s) URL and return its status code plus the first 2000 characters."""
     try:
         parsed = httpx.URL(url)
-        if parsed.scheme not in ("http", "https") or not _is_public_host(parsed.host):
+        address = _public_address(parsed.host) if parsed.scheme in ("http", "https") else None
+        if address is None:
             return "error: only public http(s) addresses can be fetched"
-        resp = httpx.get(url, timeout=15, follow_redirects=False)
+        name = f"[{parsed.host}]" if ":" in parsed.host else parsed.host
+        host_header = f"{name}:{parsed.port}" if parsed.port else name
+        extensions = {"sni_hostname": parsed.host} if parsed.scheme == "https" else {}
+        with httpx.Client(timeout=15, follow_redirects=False) as client:
+            resp = client.get(
+                parsed.copy_with(host=address),
+                headers={"Host": host_header},
+                extensions=extensions,
+            )
         if resp.is_redirect:
             target = parsed.join(resp.headers.get("location", ""))
             return f"HTTP {resp.status_code}\nredirects to {target}"

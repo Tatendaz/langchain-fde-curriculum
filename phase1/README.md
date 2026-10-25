@@ -23,8 +23,9 @@ Three tools — two pure, one that makes a real HTTP call (no API key needed):
 - `calculator(expression)` — evaluates basic arithmetic.
 - `word_count(text)` — counts words.
 - `fetch_url(url)` — real HTTP GET of a public http(s) URL; returns status + first 2000 chars.
-  It refuses private, loopback and metadata addresses and hands redirects back to the model
-  instead of following them, because the model picks the URL from text it read.
+  It refuses private, loopback and metadata addresses, connects to the address it checked,
+  and hands redirects back to the model instead of following them, because the model picks
+  the URL from text it read.
 
 The sample task forces the agent to chain them:
 > "Fetch https://example.com, count the words on the page, and compute 23 × 19."
