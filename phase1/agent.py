@@ -113,7 +113,7 @@ def fetch_url(url: str) -> str:
         # fetch would fail. It also skips SSL_CERT_FILE and NETRC.
         # Try each checked address in order, like a normal connect would, so a
         # host whose first answer is unreachable (say, IPv6 with no route)
-        # still works.
+        # still works. A timeout counts too: a dropped packet looks like one.
         with httpx.Client(timeout=15, follow_redirects=False, trust_env=False) as client:
             for i, address in enumerate(addresses):
                 try:
@@ -123,7 +123,7 @@ def fetch_url(url: str) -> str:
                         extensions=extensions,
                     )
                     break
-                except httpx.ConnectError:
+                except (httpx.ConnectError, httpx.ConnectTimeout):
                     if i == len(addresses) - 1:
                         raise
         if resp.is_redirect:
